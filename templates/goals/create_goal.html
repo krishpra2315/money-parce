@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Create New Goal</h2>
+    <form method="post">
+        {% csrf_token %}
+        <div class="form-group">
+            <label for="id_name">Goal Name</label>
+            {{ form.name }}
+        </div>
+        <div class="form-group">
+            <label for="id_target_amount">Target Amount ($)</label>
+            {{ form.target_amount }}
+        </div>
+        <button type="submit" class="btn btn-primary">Create Goal</button>
+        <a href="{% url 'goals:goal_list' %}" class="btn btn-secondary">Cancel</a>
+    </form>
+</div>
+{% endblock %} 
