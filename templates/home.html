@@ -1,7 +1,5 @@
-{% extends 'base.html' %}
-
-{% block title %}Home{% endblock %}
-
+{% extends 'base.html' %} 
+{% block title %}Home{% endblock %} 
 {% block content%}
 <div class="p-5 mb-4 bg-light rounded-3">
   <div class="container-fluid py-5">
@@ -9,9 +7,22 @@
     <p class="col-md-8 fs-4">Your personal finance management solution</p>
     {% if user.is_authenticated %}
     <div class="mb-3">
-      <a href="{% url 'profile' %}" class="btn btn-primary btn-lg">View Your Profile</a>
-      <a href="{% url 'transactions:transaction_list' %}" class="btn btn-success btn-lg">Manage Transactions</a>
-      <a href="{% url 'goals:goal_list' %}" class="btn btn-info btn-lg">Track Goals</a>
+      <a href="{% url 'profile' %}" class="btn btn-primary btn-lg"
+        >View Your Profile</a
+      >
+      <a
+        href="{% url 'transactions:transaction_list' %}"
+        class="btn btn-success btn-lg"
+        >Manage Transactions</a
+      >
+      <a href="{% url 'goals:goal_list' %}" class="btn btn-info btn-lg"
+        >Track Goals</a
+      >
+      <a
+        href="{% url 'budgets:budget_dashboard' %}"
+        class="btn btn-warning btn-lg"
+        >Manage Budgets</a
+      >
     </div>
     {% else %}
     <a href="{% url 'register' %}" class="btn btn-primary btn-lg"
