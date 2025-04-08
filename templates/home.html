@@ -11,6 +11,7 @@
     <div class="mb-3">
       <a href="{% url 'profile' %}" class="btn btn-primary btn-lg">View Your Profile</a>
       <a href="{% url 'transactions:transaction_list' %}" class="btn btn-success btn-lg">Manage Transactions</a>
+      <a href="{% url 'goals:goal_list' %}" class="btn btn-info btn-lg">Track Goals</a>
     </div>
     {% else %}
     <a href="{% url 'register' %}" class="btn btn-primary btn-lg"
