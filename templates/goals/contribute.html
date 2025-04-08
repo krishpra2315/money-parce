@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Contribute to {{ goal.name }}</h2>
+    <p>Current Progress: ${{ goal.current_amount }} / ${{ goal.target_amount }}</p>
+    <form method="post">
+        {% csrf_token %}
+        <div class="form-group">
+            <label for="id_amount">Contribution Amount ($)</label>
+            {{ form.amount }}
+        </div>
+        <button type="submit" class="btn btn-success">Contribute</button>
+        <a href="{% url 'goals:goal_list' %}" class="btn btn-secondary">Cancel</a>
+    </form>
+</div>
+{% endblock %} 

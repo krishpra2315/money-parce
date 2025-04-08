@@ -44,8 +44,10 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'users',
     'transactions',
+    'goals',
     'widget_tweaks',
     'reminders',
+    'budgets',
 ]
 
 MIDDLEWARE = [

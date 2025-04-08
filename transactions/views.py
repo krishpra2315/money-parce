@@ -14,7 +14,7 @@ def transaction_list(request):
     transactions = Transaction.objects.filter(user=request.user)
     
     # Process the filter form if it's a GET request with parameters
-    filter_form = TransactionFilterForm(user=request.user, data=request.GET or None)
+    filter_form = TransactionFilterForm(data=request.GET or None)
     if request.GET and filter_form.is_valid():
         # Apply filters based on form data
         name_filter = filter_form.cleaned_data.get('name')
