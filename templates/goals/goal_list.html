@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>My Financial Goals</h2>
+    <a href="{% url 'goals:create_goal' %}" class="btn btn-primary mb-3">Create New Goal</a>
+
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }}">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <div class="row">
+        {% for goal in goals %}
+        <div class="col-md-6 mb-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">{{ goal.name }}</h5>
+                    <p class="card-text">
+                        Target: ${{ goal.target_amount }}<br>
+                        Current: ${{ goal.current_amount }}
+                    </p>
+                    <div class="progress mb-3">
+                        <div class="progress-bar" role="progressbar" 
+                             style="width: {{ goal.progress_percentage }}%"
+                             aria-valuenow="{{ goal.progress_percentage }}" 
+                             aria-valuemin="0" 
+                             aria-valuemax="100">
+                            {{ goal.progress_percentage|floatformat:1 }}%
+                        </div>
+                    </div>
+                    <div class="d-flex gap-3">
+                        <a href="{% url 'goals:contribute_to_goal' goal.id %}" class="btn btn-success">Contribute</a>
+                        <a href="{% url 'goals:delete_goal' goal.id %}" class="btn btn-danger">Delete</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12">
+            <p>No goals yet. Create your first goal to get started!</p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %} 
