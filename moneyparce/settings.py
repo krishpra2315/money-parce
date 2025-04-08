@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     'users',
     'transactions',
     'widget_tweaks',
+    'reminders',
 ]
 
 MIDDLEWARE = [
