@@ -10,7 +10,7 @@ class TransactionForm(forms.ModelForm):
         widgets = {
             'name': forms.TextInput(attrs={'class': 'form-control'}),
             'amount': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),
-            'category': forms.TextInput(attrs={'class': 'form-control'}),
+            'category': forms.Select(attrs={'class': 'form-control'}),
             'date': forms.DateInput(attrs={
                 'class': 'form-control',
                 'type': 'date', 
@@ -24,9 +24,10 @@ class TransactionFilterForm(forms.Form):
         widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Search by name'})
     )
     
-    category = forms.CharField(
-        required=False, 
-        widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Filter by category'})
+    category = forms.ChoiceField(
+        required=False,
+        choices=[('', 'All Categories')] + Transaction.CATEGORY_CHOICES,
+        widget=forms.Select(attrs={'class': 'form-control'})
     )
     
     max_amount = forms.DecimalField(
@@ -40,14 +41,4 @@ class TransactionFilterForm(forms.Form):
     
     def __init__(self, user=None, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        # If a user is provided, we can get distinct categories from their transactions
-        if user and user.is_authenticated:
-            transactions = Transaction.objects.filter(user=user)
-            categories = list(transactions.values_list('category', flat=True).distinct())
-            
-            if categories:
-                self.fields['category'] = forms.ChoiceField(
-                    required=False,
-                    choices=[('', 'All Categories')] + [(c, c) for c in categories],
-                    widget=forms.Select(attrs={'class': 'form-control'})
-                ) 
+        # No need for dynamic category loading anymore as we have fixed choices 
