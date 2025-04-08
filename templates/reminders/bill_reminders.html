@@ -1,23 +1,45 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<h2>Your Bill Reminders</h2>
-<table>
-  <tr>
-    <th>Title</th>
-    <th>Amount</th>
-    <th>Due Date</th>
-    <th>Status</th>
-  </tr>
-  {% for reminder in reminders %}
-  <tr>
-    <td>{{ reminder.title }}</td>
-    <td>${{ reminder.amount }}</td>
-    <td>{{ reminder.due_date }}</td>
-    <td>{% if reminder.is_paid %}Paid{% else %}Unpaid{% endif %}</td>
-  </tr>
-  {% empty %}
-  <tr><td colspan="4">No bill reminders found.</td></tr>
-  {% endfor %}
-</table>
+<div class="container">
+  <h2>Your Bill Reminders</h2>
+
+  <a href="{% url 'reminder_create' %}" class="btn btn-primary">+ Add Reminder</a>
+
+  {% if reminders %}
+    <table class="table mt-3">
+      <thead>
+        <tr>
+          <th>Title</th>
+          <th>Amount</th>
+          <th>Due Date</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for reminder in reminders %}
+        <tr>
+          <td>{{ reminder.title }}</td>
+          <td>${{ reminder.amount }}</td>
+          <td>{{ reminder.due_date }}</td>
+          <td>
+            {% if reminder.is_paid %}
+              <span class="text-success">Paid</span>
+            {% else %}
+              <span class="text-danger">Unpaid</span>
+            {% endif %}
+          </td>
+          <td>
+            <a href="{% url 'reminder_edit' reminder.pk %}">Edit</a> |
+            <a href="{% url 'reminder_delete' reminder.pk %}">Delete</a>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <p>No bill reminders found.</p>
+  {% endif %}
+</div>
 {% endblock %}
