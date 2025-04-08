@@ -11,6 +11,7 @@
     <div class="mb-3">
       <a href="{% url 'profile' %}" class="btn btn-primary btn-lg">View Your Profile</a>
       <a href="{% url 'transactions:transaction_list' %}" class="btn btn-success btn-lg">Manage Transactions</a>
+      <a href="{% url 'bill_reminders' %}" class="btn btn-primary btn-lg">Go to Bill Reminders</a>
     </div>
     {% else %}
     <a href="{% url 'register' %}" class="btn btn-primary btn-lg"
@@ -19,6 +20,7 @@
     <a href="{% url 'login' %}" class="btn btn-outline-secondary btn-lg"
       >Login</a
     >
+    
     {% endif %}
   </div>
 </div>
