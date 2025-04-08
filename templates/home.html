@@ -23,6 +23,7 @@
         class="btn btn-warning btn-lg"
         >Manage Budgets</a
       >
+      <a href="{% url 'bill_reminders' %}" class="btn btn-primary btn-lg">Create Bill Reminders</a>
     </div>
     {% else %}
     <a href="{% url 'register' %}" class="btn btn-primary btn-lg"
@@ -31,6 +32,7 @@
     <a href="{% url 'login' %}" class="btn btn-outline-secondary btn-lg"
       >Login</a
     >
+    
     {% endif %}
   </div>
 </div>

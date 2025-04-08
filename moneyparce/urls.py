@@ -25,4 +25,5 @@ urlpatterns = [
     path('goals/', include('goals.urls', namespace='goals')),
     path('budgets/', include('budgets.urls', namespace='budgets')),
     path('', TemplateView.as_view(template_name='home.html'), name='home'),
+    path('reminders/', include('reminders.urls')),
 ]
