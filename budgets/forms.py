@@ -1,13 +1,14 @@
 from django import forms
 from .models import BudgetCategory, MonthlyBudget
 from django.contrib.auth.models import User
+from transactions.models import Transaction
 
 class BudgetCategoryForm(forms.ModelForm):
     class Meta:
         model = BudgetCategory
         fields = ['name', 'description']
         widgets = {
-            'name': forms.TextInput(attrs={'class': 'form-control'}),
+            'name': forms.Select(attrs={'class': 'form-control'}),
             'description': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
         }
 

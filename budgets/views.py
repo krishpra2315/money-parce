@@ -35,7 +35,7 @@ def create_category(request):
             category.user = request.user
             category.save()
             messages.success(request, 'Budget category created successfully!')
-            return redirect('budget_dashboard')
+            return redirect('budgets:budget_dashboard')
     else:
         form = BudgetCategoryForm()
     
@@ -50,7 +50,7 @@ def create_budget(request):
             budget.user = request.user
             budget.save()
             messages.success(request, 'Monthly budget created successfully!')
-            return redirect('budget_dashboard')
+            return redirect('budgets:budget_dashboard')
     else:
         form = MonthlyBudgetForm(request.user)
     
@@ -64,7 +64,7 @@ def edit_budget(request, budget_id):
         if form.is_valid():
             form.save()
             messages.success(request, 'Budget updated successfully!')
-            return redirect('budget_dashboard')
+            return redirect('budgets:budget_dashboard')
     else:
         form = MonthlyBudgetForm(request.user, instance=budget)
     
@@ -76,5 +76,5 @@ def delete_budget(request, budget_id):
     if request.method == 'POST':
         budget.delete()
         messages.success(request, 'Budget deleted successfully!')
-        return redirect('budget_dashboard')
+        return redirect('budgets:budget_dashboard')
     return render(request, 'budgets/confirm_delete.html', {'budget': budget}) 
