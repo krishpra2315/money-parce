@@ -26,4 +26,6 @@ urlpatterns = [
     path('budgets/', include('budgets.urls', namespace='budgets')),
     path('', TemplateView.as_view(template_name='home.html'), name='home'),
     path('reminders/', include('reminders.urls')),
+    path('scholarships/', include('scholarships.urls', namespace='scholarships')),
+    path('charts/', include('charts.urls', namespace='charts')),
 ]

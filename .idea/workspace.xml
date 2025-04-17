@@ -57,10 +57,11 @@
       <option name="PARENT_ENVS" value="true" />
       <envs>
         <env name="PYTHONUNBUFFERED" value="1" />
+        <env name="DJANGO_SETTINGS_MODULE" value="moneyparce.settings" />
       </envs>
       <option name="SDK_HOME" value="" />
       <option name="WORKING_DIRECTORY" value="" />
-      <option name="IS_MODULE_SDK" value="false" />
+      <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <option name="launchJavascriptDebuger" value="false" />
@@ -87,11 +88,19 @@
   <component name="TaskManager">
     <task active="true" id="Default" summary="Default task">
       <changelist id="4c3b0863-088d-449f-8cfa-f2e381edb743" name="Changes" comment="" />
+<<<<<<< HEAD
       <created>1744054284312</created>
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1744054284312</updated>
       <workItem from="1744054286523" duration="2583000" />
+=======
+      <created>1744122994994</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1744122994994</updated>
+      <workItem from="1744122996270" duration="78000" />
+>>>>>>> 7021151f12252c8b94e3f864e755157d61f723f1
     </task>
     <servers />
   </component>

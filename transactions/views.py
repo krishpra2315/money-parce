@@ -5,6 +5,7 @@ from django.db.models import Q
 from django.http import HttpResponseRedirect
 from .models import Transaction
 from .forms import TransactionForm, TransactionFilterForm
+import datetime
 
 @login_required
 def transaction_list(request):
@@ -20,6 +21,8 @@ def transaction_list(request):
         name_filter = filter_form.cleaned_data.get('name')
         category_filter = filter_form.cleaned_data.get('category')
         max_amount_filter = filter_form.cleaned_data.get('max_amount')
+        month_filter = filter_form.cleaned_data.get('month')
+        year_filter = filter_form.cleaned_data.get('year')
         
         # Filter by name (partial match)
         if name_filter:
@@ -32,6 +35,16 @@ def transaction_list(request):
         # Filter by max amount
         if max_amount_filter is not None:
             transactions = transactions.filter(amount__lte=max_amount_filter)
+            
+        # Filter by month and year
+        if month_filter and year_filter:
+            transactions = transactions.filter(date__month=month_filter, date__year=year_filter)
+        # Filter by month only (across all years)
+        elif month_filter:
+            transactions = transactions.filter(date__month=month_filter)
+        # Filter by year only (across all months)
+        elif year_filter:
+            transactions = transactions.filter(date__year=year_filter)
     
     # Handle form submission for new transaction
     if request.method == 'POST':

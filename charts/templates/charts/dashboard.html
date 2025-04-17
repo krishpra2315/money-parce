@@ -1,0 +1,76 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load chart_extras %}
+
+{% block title %}Spending Charts{% endblock %}
+
+{% block content %}
+<div class="container">
+  <h1 class="mb-4">Spending Analysis</h1>
+  
+  <div class="row">
+    <!-- Category Pie Chart -->
+    <div class="col-md-6 mb-4">
+      <div class="card h-100">
+        <div class="card-header bg-success text-white">
+          <h4 class="card-title mb-0">
+            {% if selected_month %}
+              {{ selected_month|month_name }} {{ selected_year }} Spending by Category
+            {% else %}
+              {{ selected_year }} Spending by Category
+            {% endif %}
+          </h4>
+        </div>
+        <div class="card-body text-center">
+          {% if category_chart %}
+            <img src="data:image/png;base64,{{ category_chart }}" class="img-fluid" alt="Category spending pie chart">
+          {% else %}
+            <div class="alert alert-info">
+              <p>No transaction data available for the selected period.</p>
+            </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+    
+    <!-- Monthly Spending Bar Chart -->
+    <div class="col-md-6 mb-4">
+      <div class="card h-100">
+        <div class="card-header bg-info text-white">
+          <h4 class="card-title mb-0">{{ selected_year }} Monthly Spending</h4>
+        </div>
+        <div class="card-body text-center">
+          {% if monthly_spending_chart %}
+            <img src="data:image/png;base64,{{ monthly_spending_chart }}" class="img-fluid" alt="Monthly spending bar chart">
+          {% else %}
+            <div class="alert alert-info">
+              <p>No transaction data available for {{ selected_year }}.</p>
+            </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <div class="card mb-4">
+    <div class="card-header bg-secondary text-white">
+      <h4 class="card-title mb-0">About Your Spending Charts</h4>
+    </div>
+    <div class="card-body">
+      <div class="row">
+        <div class="col-md-6">
+          <h5>Category Breakdown</h5>
+          <p>The pie chart shows how your spending is distributed across different categories. This can help you identify areas where you might be spending more than expected.</p>
+        </div>
+        <div class="col-md-6">
+          <h5>Monthly Trends</h5>
+          <p>The bar chart displays your spending patterns across months, helping you identify spending trends throughout the year.</p>
+        </div>
+      </div>
+      <div class="alert alert-primary mt-3">
+        <p class="mb-0"><strong>Tip:</strong> These charts update automatically when you add or delete transactions. You can use the filters on the Transactions page to manage which data is displayed here.</p>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %} 

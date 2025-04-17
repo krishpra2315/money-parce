@@ -4,37 +4,108 @@
 
 {% block content %}
 <div class="row">
-  <div class="col-md-6 offset-md-3">
-    <div class="card">
-      <div class="card-header">
-        <h3 class="card-title">Your Profile</h3>
+  <div class="col-md-8 offset-md-2">
+    <div class="card mb-4">
+      <div class="card-header bg-primary text-white">
+        <h3 class="card-title mb-0">Your Profile</h3>
       </div>
       <div class="card-body">
-        <div class="mb-3">
-          <h5>Email:</h5>
-          <p>{{ user.email }}</p>
-        </div>
-        <div class="mb-3">
-          <h5>Name:</h5>
-          <p>{{ user.name }}</p>
-        </div>
-        {% if user.age %}
-        <div class="mb-3">
-          <h5>Age:</h5>
-          <p>{{ user.age }}</p>
-        </div>
-        {% endif %}
-        <div class="mb-3">
-          <h5>Bank Account:</h5>
-          <p>
-            {% if user.bank_linked %}
-            <span class="badge bg-success">Linked</span>
-            {% else %}
-            <span class="badge bg-danger">Not Linked</span>
-            <br />
-            <small>Link your bank account to access all features</small>
-            {% endif %}
-          </p>
+        <form method="post">
+          {% csrf_token %}
+          <div class="row mb-3">
+            <div class="col-md-6">
+              <label for="{{ form.email.id_for_label }}" class="form-label">Email</label>
+              {{ form.email }}
+              {% if form.email.errors %}
+                <div class="text-danger">
+                  {% for error in form.email.errors %}
+                    {{ error }}
+                  {% endfor %}
+                </div>
+              {% endif %}
+            </div>
+            <div class="col-md-6">
+              <label for="{{ form.name.id_for_label }}" class="form-label">Name</label>
+              {{ form.name }}
+              {% if form.name.errors %}
+                <div class="text-danger">
+                  {% for error in form.name.errors %}
+                    {{ error }}
+                  {% endfor %}
+                </div>
+              {% endif %}
+            </div>
+          </div>
+          
+          <div class="row mb-3">
+            <div class="col-md-6">
+              <label for="{{ form.age.id_for_label }}" class="form-label">Age</label>
+              {{ form.age }}
+              <small class="form-text text-muted">
+                {% if user.age >= 18 and user.age <= 22 %}
+                  You are eligible for scholarships!
+                {% endif %}
+              </small>
+              {% if form.age.errors %}
+                <div class="text-danger">
+                  {% for error in form.age.errors %}
+                    {{ error }}
+                  {% endfor %}
+                </div>
+              {% endif %}
+            </div>
+            <div class="col-md-6">
+              <div class="mt-4">
+                <h5>Bank Account Status:</h5>
+                <p>
+                  {% if user.bank_linked %}
+                  <span class="badge bg-success">Linked</span>
+                  {% else %}
+                  <span class="badge bg-danger">Not Linked</span>
+                  <br />
+                  <small>Link your bank account to access all features</small>
+                  {% endif %}
+                </p>
+              </div>
+            </div>
+          </div>
+          
+          <div class="d-grid gap-2">
+            <button type="submit" class="btn btn-primary">Update Profile</button>
+          </div>
+        </form>
+      </div>
+    </div>
+    
+    <div class="card">
+      <div class="card-header bg-info text-white">
+        <h4 class="card-title mb-0">Account Features</h4>
+      </div>
+      <div class="card-body">
+        <div class="row">
+          <div class="col-md-6">
+            <h5>Your Current Features:</h5>
+            <ul class="list-group">
+              <li class="list-group-item">Budget Management</li>
+              <li class="list-group-item">Transaction Tracking</li>
+              <li class="list-group-item">Goal Setting</li>
+              <li class="list-group-item">Bill Reminders</li>
+              {% if user.age is not None and user.age >= 18 and user.age <= 22 %}
+                <li class="list-group-item list-group-item-success">
+                  Scholarships
+                  <span class="badge bg-success float-end">Eligible</span>
+                </li>
+              {% endif %}
+            </ul>
+          </div>
+          <div class="col-md-6">
+            <h5>Account Security:</h5>
+            <div class="d-grid gap-2">
+              <a href="{% url 'password_reset' %}" class="btn btn-outline-secondary">
+                Reset Password
+              </a>
+            </div>
+          </div>
         </div>
       </div>
     </div>

@@ -2,6 +2,7 @@ from django import forms
 from .models import Transaction
 from django.utils import timezone
 from django.db.models import Max, Min
+import datetime
 
 class TransactionForm(forms.ModelForm):
     class Meta:
@@ -39,6 +40,41 @@ class TransactionFilterForm(forms.Form):
         })
     )
     
+    MONTH_CHOICES = [
+        ('', 'All Months'),
+        ('1', 'January'),
+        ('2', 'February'),
+        ('3', 'March'),
+        ('4', 'April'),
+        ('5', 'May'),
+        ('6', 'June'),
+        ('7', 'July'),
+        ('8', 'August'),
+        ('9', 'September'),
+        ('10', 'October'),
+        ('11', 'November'),
+        ('12', 'December'),
+    ]
+    
+    month = forms.ChoiceField(
+        required=False,
+        choices=MONTH_CHOICES,
+        widget=forms.Select(attrs={'class': 'form-control'})
+    )
+    
+    year = forms.IntegerField(
+        required=False,
+        widget=forms.NumberInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'Year',
+            'min': '2000',
+            'max': datetime.date.today().year
+        })
+    )
+    
     def __init__(self, user=None, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        # Initialize year with current year if not provided
+        if not self.is_bound or not self.cleaned_data.get('year'):
+            self.fields['year'].initial = datetime.date.today().year
         # No need for dynamic category loading anymore as we have fixed choices 

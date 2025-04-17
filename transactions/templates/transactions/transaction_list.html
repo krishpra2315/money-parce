@@ -56,11 +56,31 @@
                             <label class="form-label">Maximum Amount</label>
                             {{ filter_form.max_amount }}
                         </div>
+                        <div class="mb-3">
+                            <label class="form-label">Month</label>
+                            {{ filter_form.month }}
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Year</label>
+                            {{ filter_form.year }}
+                        </div>
                         <div class="d-flex">
                             <button type="submit" class="btn btn-info me-2">Apply Filters</button>
                             <a href="{% url 'transactions:transaction_list' %}" class="btn btn-outline-secondary">Clear Filters</a>
                         </div>
                     </form>
+                </div>
+            </div>
+            
+            <div class="card mt-4">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">Visualize Spending</h5>
+                </div>
+                <div class="card-body">
+                    <p>Want to see your spending in charts and graphs?</p>
+                    <a href="{% url 'charts:dashboard' %}" class="btn btn-success w-100">
+                        View Spending Charts
+                    </a>
                 </div>
             </div>
         </div>
@@ -69,6 +89,13 @@
             <div class="card">
                 <div class="card-header bg-secondary text-white">
                     <h5 class="mb-0">Your Transactions</h5>
+                    {% if request.GET.month or request.GET.year %}
+                        <small class="text-light">
+                            Filtered: 
+                            {% if request.GET.month %}Month: {{ request.GET.month }}{% endif %}
+                            {% if request.GET.year %}Year: {{ request.GET.year }}{% endif %}
+                        </small>
+                    {% endif %}
                 </div>
                 <div class="card-body">
                     {% if transactions %}

@@ -48,6 +48,8 @@ INSTALLED_APPS = [
     'widget_tweaks',
     'reminders',
     'budgets',
+    'scholarships',
+    'charts',
 ]
 
 MIDDLEWARE = [

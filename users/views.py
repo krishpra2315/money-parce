@@ -11,7 +11,7 @@ from django.contrib.auth.views import (
     PasswordResetConfirmView,
     PasswordResetCompleteView
 )
-from .forms import UserRegistrationForm, UserLoginForm, UserPasswordResetForm, UserSetPasswordForm
+from .forms import UserRegistrationForm, UserLoginForm, UserPasswordResetForm, UserSetPasswordForm, ProfileUpdateForm
 
 def register(request):
     if request.method == 'POST':
@@ -67,4 +67,15 @@ class CustomPasswordResetCompleteView(PasswordResetCompleteView):
 
 @login_required
 def profile(request):
-    return render(request, 'users/profile.html')
+    if request.method == 'POST':
+        form = ProfileUpdateForm(request.POST, instance=request.user)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Your profile has been updated successfully.")
+            return redirect('profile')
+        else:
+            messages.error(request, "There was an error updating your profile. Please check the form.")
+    else:
+        form = ProfileUpdateForm(instance=request.user)
+    
+    return render(request, 'users/profile.html', {'form': form})

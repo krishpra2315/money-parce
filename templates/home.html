@@ -24,6 +24,12 @@
         >Manage Budgets</a
       >
       <a href="{% url 'bill_reminders' %}" class="btn btn-primary btn-lg">Create Bill Reminders</a>
+      
+      <a href="{% url 'charts:dashboard' %}" class="btn btn-danger btn-lg">Spending Charts</a>
+      
+      {% if user.age is not None and user.age >= 18 and user.age <= 22 %}
+      <a href="{% url 'scholarships:dashboard' %}" class="btn btn-success btn-lg">Manage Scholarships</a>
+      {% endif %}
     </div>
     {% else %}
     <a href="{% url 'register' %}" class="btn btn-primary btn-lg"

@@ -1,0 +1,121 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Scholarships{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1 class="mb-4">Scholarship Dashboard</h1>
+    
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="card-title mb-0">College Debt</h5>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            {{ debt_form.total_amount.label_tag }}
+                            {{ debt_form.total_amount }}
+                        </div>
+                        <button type="submit" name="update_debt" class="btn btn-primary">Update College Debt</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-header bg-success text-white">
+                    <h5 class="card-title mb-0">Scholarship Coverage</h5>
+                </div>
+                <div class="card-body">
+                    <h4>Total Debt: ${{ college_debt.total_amount }}</h4>
+                    <h4>Total Scholarships: ${{ total_scholarships }}</h4>
+                    
+                    <div class="mt-3">
+                        <h5>Coverage Progress</h5>
+                        <div class="progress" style="height: 25px;">
+                            <div id="coverage-bar" class="progress-bar bg-success" role="progressbar" 
+                                style="width: {{ coverage_percentage }}%;" 
+                                aria-valuenow="{{ coverage_percentage }}" 
+                                aria-valuemin="0" 
+                                aria-valuemax="100">
+                                {{ coverage_percentage|floatformat:1 }}%
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card mb-4">
+                <div class="card-header bg-info text-white">
+                    <h5 class="card-title mb-0">Add New Scholarship</h5>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ scholarship_form.name.id_for_label }}">Scholarship Name</label>
+                                {{ scholarship_form.name }}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ scholarship_form.amount.id_for_label }}">Amount ($)</label>
+                                {{ scholarship_form.amount }}
+                            </div>
+                        </div>
+                        <button type="submit" name="add_scholarship" class="btn btn-info">Add Scholarship</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="card">
+        <div class="card-header bg-secondary text-white">
+            <h5 class="card-title mb-0">Your Scholarships</h5>
+        </div>
+        <div class="card-body">
+            {% if scholarships %}
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Amount</th>
+                                <th>Date Added</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for scholarship in scholarships %}
+                                <tr>
+                                    <td>{{ scholarship.name }}</td>
+                                    <td>${{ scholarship.amount }}</td>
+                                    <td>{{ scholarship.date_added|date:"M d, Y" }}</td>
+                                    <td>
+                                        <form method="post" action="{% url 'scholarships:delete_scholarship' scholarship.id %}">
+                                            {% csrf_token %}
+                                            <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="alert alert-info">
+                    You haven't added any scholarships yet. Use the form above to add your first scholarship.
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %} 
