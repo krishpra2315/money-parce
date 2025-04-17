@@ -28,4 +28,5 @@ urlpatterns = [
     path('reminders/', include('reminders.urls')),
     path('scholarships/', include('scholarships.urls', namespace='scholarships')),
     path('charts/', include('charts.urls', namespace='charts')),
+    path('reports/', include('reports.urls', namespace='reports')),
 ]

@@ -27,6 +27,8 @@
       
       <a href="{% url 'charts:dashboard' %}" class="btn btn-danger btn-lg">Spending Charts</a>
       
+      <a href="{% url 'reports:yearly_report' %}" class="btn btn-secondary btn-lg">Yearly Financial Report</a>
+      
       {% if user.age is not None and user.age >= 18 and user.age <= 22 %}
       <a href="{% url 'scholarships:dashboard' %}" class="btn btn-success btn-lg">Manage Scholarships</a>
       {% endif %}
