@@ -3,10 +3,10 @@
 
 {% block content %}
 <div class="container mt-4">
-    <div class="row mb-4">
+    <div class="row mb-4 align-items-center">
         <div class="col-md-6">
             <h2>Budget Dashboard</h2>
-            <p class="text-muted">{{ current_month }}</p>
+            <p class="text-muted mb-0">{{ current_month }}</p>
         </div>
         <div class="col-md-6 text-end">
             <a href="{% url 'budgets:create_budget' %}" class="btn btn-primary">
@@ -15,17 +15,22 @@
         </div>
     </div>
 
-    <div class="row">
+    <div class="row mb-4">
         <div class="col-md-4">
-            <div class="card mb-4">
+            <div class="card">
                 <div class="card-body">
-                    <h5 class="card-title">Total Budget</h5>
+                    <h5 class="card-title">Total Monthly Budget</h5>
                     <h2 class="text-primary">${{ total_budget|floatformat:2 }}</h2>
-                    <p class="text-muted">Spent: ${{ total_spent|floatformat:2 }}</p>
-                    <div class="progress mb-3">
-                        <div class="progress-bar {% if total_progress > 100 %}bg-danger{% elif total_progress > 80 %}bg-warning{% endif %}" 
-                             role="progressbar" 
-                             style="width: {{ total_progress }}%">
+                    <p class="card-text mb-2">
+                       Spent: ${{ total_spent|floatformat:2 }}
+                    </p>
+                    <div class="progress" style="height: 20px;">
+                        <div class="progress-bar progress-bar-striped progress-bar-animated {% if total_progress > 100 %}bg-danger{% elif total_progress > 80 %}bg-warning{% else %}bg-primary{% endif %}"
+                             role="progressbar"
+                             style="width: {{ total_progress }}%"
+                             aria-valuenow="{{ total_progress }}"
+                             aria-valuemin="0" aria-valuemax="100">
+                             {{ total_progress|floatformat:1 }}%
                         </div>
                     </div>
                 </div>
@@ -34,70 +39,73 @@
     </div>
 
     <div class="row">
-        <div class="col-md-12">
-            <div class="card">
-                <div class="card-header">
-                    <h5 class="card-title mb-0">Monthly Budgets</h5>
-                </div>
-                <div class="card-body">
-                    {% if budgets %}
-                        <div class="table-responsive">
-                            <table class="table table-hover">
-                                <thead>
-                                    <tr>
-                                        <th>Category</th>
-                                        <th>Budget</th>
-                                        <th>Spent</th>
-                                        <th>Remaining</th>
-                                        <th>Progress</th>
-                                        <th>Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {% for budget in budgets %}
-                                    <tr>
-                                        <td>{{ budget.category.get_name_display }}</td>
-                                        <td>${{ budget.amount|floatformat:2 }}</td>
-                                        <td>${{ budget.get_spent_amount|floatformat:2 }}</td>
-                                        <td>${{ budget.get_remaining_amount|floatformat:2 }}</td>
-                                        <td>
-                                            <div class="progress">
-                                                <div class="progress-bar {% if budget.get_progress_percentage > 100 %}bg-danger{% elif budget.get_progress_percentage > 80 %}bg-warning{% endif %}" 
-                                                     role="progressbar" 
-                                                     style="width: {{ budget.get_progress_percentage }}%">
-                                                    {{ budget.get_progress_percentage|floatformat:1 }}%
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td>
-                                            <a href="{% url 'budgets:edit_budget' budget.id %}" class="btn btn-sm btn-outline-primary">
-                                                <i class="fas fa-edit"></i> Edit
-                                            </a>
-                                            <a href="{% url 'budgets:delete_budget' budget.id %}" class="btn btn-sm btn-outline-danger">
-                                                <i class="fas fa-trash"></i> Delete
-                                            </a>
-                                        </td>
-                                    </tr>
-                                    {% endfor %}
-                                </tbody>
-                            </table>
+        {% if budgets %}
+            {% for budget in budgets %}
+            <div class="col-md-6 mb-4">
+                <div class="card h-100">
+                    <div class="card-body d-flex flex-column">
+                        <h5 class="card-title">{{ budget.category.get_name_display }}</h5>
+                        <p class="card-text mb-2">
+                            Budget: ${{ budget.amount|floatformat:2 }}<br>
+                            Spent: ${{ budget.get_spent_amount|floatformat:2 }}<br>
+                            Remaining: <span class="{% if budget.get_remaining_amount < 0 %}text-danger fw-bold{% else %}text-success{% endif %}">
+                                ${{ budget.get_remaining_amount|floatformat:2 }}
+                            </span>
+                        </p>
+
+                        <div class="progress mt-auto mb-3" style="height: 25px;">
+                           <div class="progress-bar progress-bar-striped progress-bar-animated {% if budget.get_progress_percentage > 100 %}bg-danger{% elif budget.get_progress_percentage > 80 %}bg-warning{% else %}bg-primary{% endif %}"
+                                 role="progressbar"
+                                 style="width: {{ budget.get_progress_percentage }}%;"
+                                 aria-valuenow="{{ budget.get_progress_percentage }}"
+                                 aria-valuemin="0" aria-valuemax="100">
+                                 {{ budget.get_progress_percentage|floatformat:1 }}%
+                           </div>
                         </div>
-                    {% else %}
-                        <p class="text-muted">No budgets created yet. Create your first budget to get started!</p>
-                    {% endif %}
+
+                        {% if budget.ai_suggestion %}
+                        <div class="mb-3 text-center">
+                            <small>
+                                <a href="#" data-bs-toggle="tooltip" data-bs-placement="top" title="{{ budget.ai_suggestion }}">
+                                    <i class="bi bi-lightbulb-fill text-warning"></i> View Spending Suggestion
+                                </a>
+                            </small>
+                        </div>
+                        {% endif %}
+
+                        <div class="mt-auto d-flex justify-content-end gap-2">
+                            <a href="{% url 'budgets:edit_budget' budget.id %}" class="btn btn-sm btn-outline-primary">
+                                <i class="fas fa-edit"></i> Edit
+                            </a>
+                            <a href="{% url 'budgets:delete_budget' budget.id %}" class="btn btn-sm btn-outline-danger">
+                                <i class="fas fa-trash"></i> Delete
+                            </a>
+                        </div>
+                    </div>
                 </div>
             </div>
-        </div>
+            {% endfor %}
+        {% else %}
+            <div class="col-12">
+                <p class="text-muted">No budgets created yet. Create your first budget to get started!</p>
+            </div>
+        {% endif %}
     </div>
 </div>
 {% endblock %}
 
 {% block extra_js %}
+{{ block.super }}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     document.querySelectorAll('.progress-bar[data-width]').forEach(function(bar) {
         bar.style.width = bar.dataset.width + '%';
     });
 });
+
+var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+  return new bootstrap.Tooltip(tooltipTriggerEl)
+})
 </script>
 {% endblock %} 

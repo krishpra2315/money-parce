@@ -212,10 +212,10 @@
                 <tr>
                   <td>{{ goal.name }}</td>
                   <td>
-                    <div class="progress">
-                      <div class="progress-bar bg-success" role="progressbar" style="width: {{ goal.progress_percentage }}%;" 
+                    <div class="progress" style="height: 30px;">
+                      <div class="progress-bar progress-bar-striped progress-bar-animated bg-success" role="progressbar" style="width: {{ goal.progress_percentage }}%;" 
                            aria-valuenow="{{ goal.progress_percentage }}" aria-valuemin="0" aria-valuemax="100">
-                        {{ goal.progress_percentage|floatformat:0 }}%
+                        {{ goal.progress_percentage|floatformat:1 }}%
                       </div>
                     </div>
                   </td>
@@ -272,7 +272,7 @@
   
   <!-- Print and Export Links -->
   <div class="text-center mb-4 no-print">
-    <div class="btn-group">
+    <div class="d-inline-flex gap-2">
       <button class="btn btn-primary" onclick="window.print()">
         <i class="bi bi-printer"></i> Print Report
       </button>

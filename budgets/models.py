@@ -21,6 +21,8 @@ class MonthlyBudget(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='budgets')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    ai_suggestion = models.TextField(blank=True, null=True, help_text="AI-generated suggestion for saving money in this category.")
+    suggestion_generated = models.BooleanField(default=False, help_text="Indicates if an AI suggestion has been generated since crossing the threshold.")
 
     class Meta:
         unique_together = ['category', 'month', 'user']
@@ -41,8 +43,9 @@ class MonthlyBudget(models.Model):
 
     def get_progress_percentage(self):
         if self.amount == 0:
-            return 100
-        return (self.get_spent_amount() / self.amount) * 100
+            return 100.0
+        spent = self.get_spent_amount()
+        return float((spent / self.amount) * 100) if self.amount else 100.0
 
     def get_alert_status(self):
         spent_percentage = self.get_progress_percentage()
@@ -67,4 +70,10 @@ class MonthlyBudget(models.Model):
             status = budget.get_alert_status()
             if status['alert']:
                 alerts.append(status)
-        return alerts 
+        return alerts
+
+    def check_and_reset_suggestion_flag(self):
+        if self.suggestion_generated and self.get_progress_percentage() < 80:
+            self.suggestion_generated = False
+            self.ai_suggestion = None
+            self.save(update_fields=['suggestion_generated', 'ai_suggestion']) 
