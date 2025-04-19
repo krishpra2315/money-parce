@@ -17,11 +17,17 @@ def budget_dashboard(request):
     )
     
     total_budget = budgets.aggregate(total=Sum('amount'))['total'] or 0
+    total_spent = sum(budget.get_spent_amount() for budget in budgets)
+    
+    # Calculate total progress percentage
+    total_progress = (total_spent / total_budget * 100) if total_budget > 0 else 0
     
     context = {
         'categories': categories,
         'budgets': budgets,
         'total_budget': total_budget,
+        'total_spent': total_spent,
+        'total_progress': total_progress,
         'current_month': current_month.strftime('%B %Y')
     }
     return render(request, 'budgets/dashboard.html', context)

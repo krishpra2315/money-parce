@@ -21,6 +21,13 @@
                 <div class="card-body">
                     <h5 class="card-title">Total Budget</h5>
                     <h2 class="text-primary">${{ total_budget|floatformat:2 }}</h2>
+                    <p class="text-muted">Spent: ${{ total_spent|floatformat:2 }}</p>
+                    <div class="progress mb-3">
+                        <div class="progress-bar {% if total_progress > 100 %}bg-danger{% elif total_progress > 80 %}bg-warning{% endif %}" 
+                             role="progressbar" 
+                             style="width: {{ total_progress }}%">
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -39,17 +46,29 @@
                                 <thead>
                                     <tr>
                                         <th>Category</th>
-                                        <th>Amount</th>
-                                        <th>Month</th>
+                                        <th>Budget</th>
+                                        <th>Spent</th>
+                                        <th>Remaining</th>
+                                        <th>Progress</th>
                                         <th>Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     {% for budget in budgets %}
                                     <tr>
-                                        <td>{{ budget.category.name }}</td>
+                                        <td>{{ budget.category.get_name_display }}</td>
                                         <td>${{ budget.amount|floatformat:2 }}</td>
-                                        <td>{{ budget.month|date:"F Y" }}</td>
+                                        <td>${{ budget.get_spent_amount|floatformat:2 }}</td>
+                                        <td>${{ budget.get_remaining_amount|floatformat:2 }}</td>
+                                        <td>
+                                            <div class="progress">
+                                                <div class="progress-bar {% if budget.get_progress_percentage > 100 %}bg-danger{% elif budget.get_progress_percentage > 80 %}bg-warning{% endif %}" 
+                                                     role="progressbar" 
+                                                     style="width: {{ budget.get_progress_percentage }}%">
+                                                    {{ budget.get_progress_percentage|floatformat:1 }}%
+                                                </div>
+                                            </div>
+                                        </td>
                                         <td>
                                             <a href="{% url 'budgets:edit_budget' budget.id %}" class="btn btn-sm btn-outline-primary">
                                                 <i class="fas fa-edit"></i> Edit
@@ -71,4 +90,14 @@
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.progress-bar[data-width]').forEach(function(bar) {
+        bar.style.width = bar.dataset.width + '%';
+    });
+});
+</script>
 {% endblock %} 
