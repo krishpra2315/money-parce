@@ -1,7 +1,7 @@
 {% extends 'base.html' %} 
 {% block title %}Home{% endblock %} 
 {% block content%}
-<div class="container-fluid">
+<div class="container-fluid pb-5">
   <div class="row">
     <!-- Main Content -->
     <div class="col-md-8">
@@ -28,6 +28,7 @@
           {% endif %}
         </div>
       </div>
+
     </div>
 
     <!-- Alerts Sidebar -->
@@ -57,4 +58,16 @@
     {% endif %}
   </div>
 </div>
+
+<!-- Daily Tip Section - Moved outside the main content flow and fixed -->
+{% if user.is_authenticated and user.daily_tip %}
+<div class="fixed-bottom bg-light border-top border-info p-3 text-center shadow-lg">
+  <div class="container">
+    <h5 class="card-title text-info mb-1"><i class="bi bi-lightbulb-fill"></i> Daily Financial Tip</h5>
+    <p class="card-text mb-0">{{ user.daily_tip }}</p>
+  </div>
+</div>
+{% endif %}
+<!-- End Daily Tip Section -->
+
 {% endblock %}
