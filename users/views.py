@@ -1,5 +1,5 @@
 from django.shortcuts import render, redirect
-from django.contrib.auth import login, authenticate, logout
+from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.urls import reverse_lazy
@@ -12,6 +12,8 @@ from django.contrib.auth.views import (
     PasswordResetCompleteView
 )
 from .forms import UserRegistrationForm, UserLoginForm, UserPasswordResetForm, UserSetPasswordForm, ProfileUpdateForm
+from django.utils import timezone
+from .utils import get_daily_financial_tip
 
 def register(request):
     if request.method == 'POST':
@@ -33,6 +35,35 @@ class CustomLoginView(LoginView):
     
     def get_success_url(self):
         return reverse_lazy('home')
+
+    def form_valid(self, form):
+        """Check and generate daily tip after successful login."""
+        login(self.request, form.get_user())
+        user = form.get_user()
+        today = timezone.now().date()
+
+        if user.last_tip_date is None or user.last_tip_date < today:
+            try:
+                prompt = "Provide a general, concise personal finance tip suitable for a wide audience. "
+                if user.age:
+                    prompt += f"Keep in mind the user is {user.age} years old, but don't make the tip overly specific to this age. "
+                else:
+                    prompt += "The user has not provided their age. "
+                prompt += "Focus on actionable advice or positive financial habits."
+
+                tip = get_daily_financial_tip(prompt) 
+
+                if tip:
+                    user.daily_tip = tip
+                    user.last_tip_date = today
+                    user.save(update_fields=['daily_tip', 'last_tip_date'])
+                else:
+                    print(f"Daily tip generation skipped or failed for user {user.email}")
+
+            except Exception as e:
+                print(f"Error during tip processing for user {user.email}: {e}") 
+
+        return redirect(self.get_success_url())
 
 class CustomLogoutView(LogoutView):
     template_name = 'users/logout.html'

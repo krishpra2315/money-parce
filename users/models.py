@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser, BaseUserManager
 from django.utils.translation import gettext_lazy as _
+from django.utils import timezone
 
 class UserManager(BaseUserManager):
     """Define a model manager for User model with email as the unique identifier."""
@@ -35,6 +36,8 @@ class User(AbstractUser):
     name = models.CharField(max_length=255)
     age = models.PositiveIntegerField(null=True, blank=True)
     bank_linked = models.BooleanField(default=False)
+    daily_tip = models.TextField(null=True, blank=True, help_text="Stores the daily financial tip.")
+    last_tip_date = models.DateField(null=True, blank=True, help_text="The date the last daily tip was generated.")
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['name']
