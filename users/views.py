@@ -13,6 +13,11 @@ from .forms import UserRegistrationForm, UserPasswordResetForm, UserSetPasswordF
 from django.utils import timezone
 from .utils import get_daily_financial_tip
 from django_otp.plugins.otp_totp.models import TOTPDevice
+# Import models for previews
+from transactions.models import Transaction
+from goals.models import Goal
+from budgets.models import MonthlyBudget
+from reminders.models import BillReminder
 
 def register(request):
     if request.method == 'POST':
@@ -87,6 +92,11 @@ def home_view(request):
     """
     context = {
         'daily_tip': None,
+        # Add previews for authenticated users
+        'recent_transactions': None,
+        'active_goals': None,
+        'recent_budgets': None,
+        'upcoming_reminders': None,
         # Add other default context variables if needed
     }
 
@@ -94,6 +104,21 @@ def home_view(request):
         user = request.user
         today = timezone.now().date()
         daily_tip = user.daily_tip # Get the potentially existing tip
+
+        # Fetch preview data
+        try:
+            context['recent_transactions'] = Transaction.objects.filter(user=user).order_by('-date')[:3]
+            context['active_goals'] = Goal.objects.filter(user=user).order_by('-updated_at')[:3] # Order by most recently updated instead of non-existent status
+            context['recent_budgets'] = MonthlyBudget.objects.filter(user=user).order_by('-month')[:3] # Corrected model name and ordering field
+            context['upcoming_reminders'] = BillReminder.objects.filter(user=user, due_date__gte=today, is_paid=False).order_by('due_date')[:3] # Corrected model name and added is_paid=False
+        except Exception as e:
+            # Log error if fetching preview data fails
+            print(f"Error fetching preview data for user {user.email}: {e}")
+            # Optionally set previews to empty lists or handle differently
+            context['recent_transactions'] = []
+            context['active_goals'] = []
+            context['recent_budgets'] = []
+            context['upcoming_reminders'] = []
 
         # Check if a new tip should be generated
         if user.last_tip_date is None or user.last_tip_date < today:
