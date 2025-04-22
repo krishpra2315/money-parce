@@ -1,0 +1,53 @@
+{% extends "two_factor/_base_focus.html" %}
+{% load i18n %}
+
+{% block title_two_factor %}{% trans "Account Security" %}{% endblock %}
+
+{% block content_focus %}
+  <h2>{% trans "Account Security" %}</h2>
+
+  <p>{% blocktrans %}Two-factor authentication protects your account by requiring
+    an additional verification code when you log in.{% endblocktrans %}</p>
+
+  <div class="list-group mb-3">
+    {% if default_device %}
+      <div class="list-group-item">
+        <h5 class="mb-1">{% trans "Enabled Methods" %}</h5>
+        <p class="mb-1">
+            {% blocktrans with name=default_device.name %}<strong>Default Method:</strong> {{ name }}{% endblocktrans %}
+            {% if default_device.name == 'TOTP' %} ({% trans "Authenticator App" %}){% endif %}
+            {% if default_device.name == 'SMS' %} ({% trans "Phone Number" %}){% endif %}
+        </p>
+        <a href="{% url 'two_factor:disable' %}" class="btn btn-sm btn-danger">{% trans "Disable Two-Factor Authentication" %}</a>
+      </div>
+      {% if available_methods %}
+        <div class="list-group-item">
+           <h5 class="mb-1">{% trans "Backup Methods" %}</h5>
+           <ul class="list-unstyled mb-2">
+              {% for method in available_methods %}
+                <li>{{ method.name }} {% if method.name == 'backup' %}({% trans "Backup Tokens" %}){% endif %}</li>
+              {% endfor %}
+           </ul>
+            <a href="{% url 'two_factor:backup_tokens' %}" class="btn btn-sm btn-secondary">{% trans "Show Backup Tokens" %}</a>
+        </div>
+      {% endif %}
+    {% else %}
+      <div class="list-group-item list-group-item-warning">
+        <h5 class="mb-1">{% trans "Two-Factor Authentication Not Enabled" %}</h5>
+        <p class="mb-1">{% trans "Add a security method to greatly enhance your account's protection." %}</p>
+      </div>
+    {% endif %}
+  </div>
+
+  <div class="mb-4">
+    <h4>{% trans "Add a Method" %}</h4>
+     <a href="{% url 'two_factor:setup' %}" class="btn btn-primary">
+        <i class="bi bi-shield-lock-fill"></i> {% trans "Add Authenticator App" %}
+     </a>
+     {# Add buttons for other methods like SMS or Backup Tokens if configured #}
+     {# Example: <a href="{% url 'two_factor:backup_tokens' %}" class="btn btn-secondary">Generate Backup Tokens</a> #}
+  </div>
+
+  <a href="{% url 'profile' %}" class="btn btn-outline-secondary">{% trans "Back to Main Profile" %}</a>
+
+{% endblock %} 

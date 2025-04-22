@@ -42,6 +42,14 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+
+    # Add these apps for 2FA
+    'django_otp',
+    'django_otp.plugins.otp_static',
+    'django_otp.plugins.otp_totp',
+    'two_factor',
+
+    # Your existing apps
     'users',
     'transactions',
     'goals',
@@ -59,6 +67,8 @@ MIDDLEWARE = [
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
+    # Add OTP middleware AFTER AuthenticationMiddleware
+    'django_otp.middleware.OTPMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
@@ -147,3 +157,9 @@ EMAIL_USE_TLS = True
 EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')
 EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+
+# Add these settings for django-two-factor-auth
+LOGIN_URL = 'two_factor:login'  # Point login to the 2FA view
+LOGIN_REDIRECT_URL = 'home' # Redirect after successful login (including 2FA)
+# Optional: Redirect URL if 2FA is not configured by the user yet
+# TWO_FACTOR_REDIRECT_URL = 'two_factor:setup'

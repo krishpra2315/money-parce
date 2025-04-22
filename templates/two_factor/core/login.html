@@ -1,0 +1,60 @@
+{% extends "two_factor/_base.html" %}
+{% load i18n widget_tweaks %}
+
+{% block title_two_factor %}{% trans "Login" %}{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-md-6">
+    <div class="card">
+      <div class="card-header">
+        <h3 class="card-title">{% block heading %}{% trans "Login" %}{% endblock %}</h3>
+      </div>
+      <div class="card-body">
+        {% block main %}
+          <form method="post" action="">
+            {% csrf_token %}
+            {{ wizard.management_form }}
+
+            {% include "two_factor/_wizard_forms.html" %}
+
+            {# Include relevant hidden fields from Django's default login #}
+            {% if wizard.steps.current == 'auth' %}
+              <input type="hidden" name="next" value="{{ next }}">
+            {% endif %}
+
+            {# Provide form step buttons #}
+            {% include "two_factor/_wizard_actions.html" %}
+
+            {% if form.errors %}
+              <div class="alert alert-danger mt-3">
+                {% if form.non_field_errors %}
+                  {{ form.non_field_errors }}
+                {% else %}
+                  {% trans "Please correct the errors below." %}
+                {% endif %}
+              </div>
+            {% endif %}
+          </form>
+        {% endblock %}
+
+        {% if wizard.steps.current == 'auth' %}
+          <div class="mt-3 text-center">
+            <p><a href="{% url 'password_reset' %}">{% trans "Forgot Password?" %}</a></p>
+            <p>{% trans "Don't have an account?" %} <a href="{% url 'register' %}">{% trans "Register" %}</a></p>
+          </div>
+        {% endif %}
+        {% if wizard.steps.current == 'token' and not disable_backup_tokens %}
+          <div class="mt-3 text-center">
+             <p><a href="{% url 'two_factor:backup_tokens' %}">{% trans "Use Backup Token" %}</a></p>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+
+{# Apply form-control class to relevant inputs using django-widget-tweaks #}
+{% include "two_factor/_widget_tweaks_override.html" %}
+
+{% endblock %} 

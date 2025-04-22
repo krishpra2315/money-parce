@@ -1,0 +1,21 @@
+{% extends "two_factor/_base_focus.html" %}
+{% load i18n %}
+
+{% block title_focus %}{% trans "Backup Tokens" %}{% endblock %}
+
+{% block content_focus %}
+  <p>{% blocktrans %}Store these backup codes in a safe place. They can be used to log in if you lose access to your primary authenticator.{% endblocktrans %}</p>
+
+  <ul class="list-group list-group-flush mb-3">
+  {% for token in backup_tokens %}
+    <li class="list-group-item">{{ token }}</li>
+  {% endfor %}
+  </ul>
+
+  <p class="text-danger"><strong>{% trans "Warning:" %}</strong> {% trans "Each backup token can only be used once." %}</p>
+
+  <div class="d-flex justify-content-between">
+      <a href="{% url 'two_factor:profile' %}" class="btn btn-secondary">{% trans "Back to Security Settings" %}</a>
+      <button onclick="window.print();" class="btn btn-outline-primary"><i class="bi bi-printer"></i> {% trans "Print Tokens" %}</button>
+  </div>
+{% endblock %} 

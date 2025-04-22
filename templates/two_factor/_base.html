@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+
+{% block content %}
+  {% block main %}{% endblock %}
+{% endblock %}
+
+{% block title %}
+  {% block title_two_factor %}{% endblock %} - {{ block.super }}
+{% endblock %} 
