@@ -1,0 +1,18 @@
+{% extends "two_factor/_base.html" %}
+{% load i18n %}
+
+{% block main %}
+<div class="row justify-content-center">
+  <div class="col-md-8"> {# Wider column for profile/setup pages #}
+    <div class="card">
+      <div class="card-header">
+        <h3 class="card-title">{% block title_focus %}{{ block.super }}{% endblock %}</h3>
+      </div>
+      <div class="card-body">
+        {% block content_focus %}
+        {% endblock %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %} 

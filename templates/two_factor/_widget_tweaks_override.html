@@ -1,0 +1,17 @@
+{% load widget_tweaks %}
+
+<script>
+// Basic script to add 'form-control' if widget_tweaks didn't catch it
+// You might not strictly need this if _wizard_forms.html covers everything.
+document.addEventListener('DOMContentLoaded', function() {
+  const forms = document.querySelectorAll('.card-body form');
+  forms.forEach(form => {
+    const inputs = form.querySelectorAll('input:not([type="checkbox"]):not([type="hidden"]):not([type="submit"]):not(.form-control), select:not(.form-control), textarea:not(.form-control)');
+    inputs.forEach(input => {
+      if (!input.classList.contains('form-control') && !input.classList.contains('form-check-input')) {
+        input.classList.add('form-control');
+      }
+    });
+  });
+});
+</script> 

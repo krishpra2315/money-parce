@@ -4,30 +4,48 @@
 <div class="container-fluid pb-5">
   <div class="row">
     <!-- Main Content -->
-    <div class="col-md-8">
+    <div class="{% if user.is_authenticated and budget_alerts %}col-md-8{% else %}col-md-12{% endif %}">
       <div class="p-5 mb-4 bg-light rounded-3">
         <div class="container-fluid py-5">
           <h1 class="display-5 fw-bold">Welcome to MoneyParce</h1>
-          <p class="col-md-8 fs-4">Your personal finance management solution</p>
           {% if user.is_authenticated %}
-          <div class="mb-3">
-            <a href="{% url 'profile' %}" class="btn btn-primary btn-lg">View Your Profile</a>
-            <a href="{% url 'transactions:transaction_list' %}" class="btn btn-success btn-lg">Manage Transactions</a>
-            <a href="{% url 'goals:goal_list' %}" class="btn btn-info btn-lg">Track Goals</a>
-            <a href="{% url 'budgets:budget_dashboard' %}" class="btn btn-warning btn-lg">Manage Budgets</a>
-            <a href="{% url 'bill_reminders' %}" class="btn btn-primary btn-lg">Create Bill Reminders</a>
-            <a href="{% url 'charts:dashboard' %}" class="btn btn-danger btn-lg">Spending Charts</a>
-            <a href="{% url 'reports:yearly_report' %}" class="btn btn-secondary btn-lg">Yearly Financial Report</a>
-            {% if user.age is not None and user.age >= 18 and user.age <= 22 %}
-            <a href="{% url 'scholarships:dashboard' %}" class="btn btn-success btn-lg">Manage Scholarships</a>
-            {% endif %}
-          </div>
+            <p class="col-md-8 fs-4">Manage your finances effectively.</p>
+            <div class="mb-3 d-flex flex-wrap gap-2">
+              <a href="{% url 'profile' %}" class="btn btn-primary btn-lg">View Profile</a>
+              <a href="{% url 'transactions:transaction_list' %}" class="btn btn-success btn-lg">Transactions</a>
+              <a href="{% url 'goals:goal_list' %}" class="btn btn-info btn-lg">Goals</a>
+              <a href="{% url 'budgets:budget_dashboard' %}" class="btn btn-warning btn-lg">Budgets</a>
+              <a href="{% url 'bill_reminders' %}" class="btn btn-dark btn-lg">Reminders</a>
+              <a href="{% url 'charts:dashboard' %}" class="btn btn-danger btn-lg">Charts</a>
+              <a href="{% url 'reports:yearly_report' %}" class="btn btn-secondary btn-lg">Reports</a>
+              {% if user.age is not None and user.age >= 18 and user.age <= 22 %}
+              <a href="{% url 'scholarships:dashboard' %}" class="btn btn-success btn-lg">Scholarships</a>
+              {% endif %}
+            </div>
           {% else %}
-          <a href="{% url 'register' %}" class="btn btn-primary btn-lg">Get Started</a>
-          <a href="{% url 'login' %}" class="btn btn-outline-secondary btn-lg">Login</a>
+            <p class="col-md-8 fs-4">Your personal finance management solution to track spending, create budgets, set goals, and more!</p>
+            <a href="{% url 'register' %}" class="btn btn-primary btn-lg">Get Started</a>
+            <a href="{% url 'two_factor:login' %}" class="btn btn-outline-secondary btn-lg">Login</a>
           {% endif %}
         </div>
       </div>
+
+      {% if not user.is_authenticated %}
+        <div class="row text-center mt-4">
+          <div class="col-md-4">
+            <h3><i class="bi bi-receipt"></i> Track Spending</h3>
+            <p>Easily log and categorize your transactions.</p>
+          </div>
+          <div class="col-md-4">
+            <h3><i class="bi bi-piggy-bank-fill"></i> Create Budgets</h3>
+            <p>Set monthly budgets and monitor your progress.</p>
+          </div>
+          <div class="col-md-4">
+            <h3><i class="bi bi-bullseye"></i> Set Goals</h3>
+            <p>Define financial goals and track your savings.</p>
+          </div>
+        </div>
+      {% endif %}
 
     </div>
 
@@ -60,11 +78,11 @@
 </div>
 
 <!-- Daily Tip Section - Moved outside the main content flow and fixed -->
-{% if user.is_authenticated and user.daily_tip %}
+{% if user.is_authenticated and daily_tip %}
 <div class="fixed-bottom bg-light border-top border-info p-3 text-center shadow-lg">
   <div class="container">
     <h5 class="card-title text-info mb-1"><i class="bi bi-lightbulb-fill"></i> Daily Financial Tip</h5>
-    <p class="card-text mb-0">{{ user.daily_tip }}</p>
+    <p class="card-text mb-0">{{ daily_tip }}</p>
   </div>
 </div>
 {% endif %}

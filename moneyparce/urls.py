@@ -17,14 +17,24 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from django.views.generic import TemplateView
+# Import include for the two_factor urls
+from two_factor.urls import urlpatterns as tf_urls
+# Import views from the users app
+from users import views as user_views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    # Include two_factor urls under '/account/'
+    # Using 'account/' means URLs like /account/login/, /account/two_factor/setup/, etc.
+    path('account/', include(tf_urls)),
+    # Keep your app urls, but make sure they don't conflict with two_factor urls
+    # Note: The login URL is now 'two_factor:login' which resolves to /account/login/
     path('users/', include('users.urls')),
     path('transactions/', include('transactions.urls', namespace='transactions')),
     path('goals/', include('goals.urls', namespace='goals')),
     path('budgets/', include('budgets.urls', namespace='budgets')),
-    path('', TemplateView.as_view(template_name='home.html'), name='home'),
+    # This root path now correctly points to your home_view first
+    path('', user_views.home_view, name='home'),
     path('reminders/', include('reminders.urls')),
     path('scholarships/', include('scholarships.urls', namespace='scholarships')),
     path('charts/', include('charts.urls', namespace='charts')),

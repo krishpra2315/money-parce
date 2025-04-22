@@ -1,0 +1,27 @@
+{% load i18n widget_tweaks %}
+
+{% for field in wizard.form %}
+  <div class="mb-3">
+    {% if field.field.widget.input_type == 'checkbox' %}
+      <div class="form-check">
+        {{ field|add_class:"form-check-input" }}
+        <label for="{{ field.id_for_label }}" class="form-check-label">{{ field.label }}</label>
+      </div>
+    {% else %}
+      <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
+      {% if field.name == 'otp_token' %}
+        {{ field|add_class:"form-control"|attr:"autocomplete:one-time-code"|attr:"inputmode:numeric"|attr:"pattern:[0-9]*" }}
+      {% else %}
+         {{ field|add_class:"form-control" }}
+      {% endif %}
+    {% endif %}
+    {% if field.help_text %}
+      <small class="form-text text-muted">{{ field.help_text|safe }}</small>
+    {% endif %}
+    {% if field.errors %}
+      <div class="text-danger mt-1">
+        {{ field.errors }}
+      </div>
+    {% endif %}
+  </div>
+{% endfor %} 
