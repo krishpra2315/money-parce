@@ -4,7 +4,7 @@
 <div class="container-fluid pb-5">
   <div class="row">
     <!-- Main Content -->
-    <div class="{% if user.is_authenticated and budget_alerts %}col-md-8{% else %}col-md-12{% endif %}">
+    <div class="col-md-12">
       <div class="p-5 mb-4 bg-light rounded-3">
         <div class="container-fluid py-5">
           <h1 class="display-5 fw-bold">
@@ -30,8 +30,8 @@
                        {% if recent_transactions %}
                            {% for tx in recent_transactions %}
                            <li class="list-group-item small d-flex justify-content-between align-items-center">
-                               <span>{{ tx.description|truncatechars:20 }} - {{ tx.date|date:"M d" }}</span>
-                               <span class="badge bg-{{ tx.get_type_display|lower }}">{{ tx.amount|floatformat:2 }}</span>
+                               <span>{{ tx.name|truncatechars:20 }} - {{ tx.date|date:"M d" }}</span>
+                               <span class="badge bg-secondary">{{ tx.amount|floatformat:2 }}</span>
                            </li>
                            {% empty %}
                            <li class="list-group-item small text-muted">No recent transactions found.</li>
@@ -58,8 +58,8 @@
                             <li class="list-group-item small">
                                 {{ goal.name|truncatechars:25 }}
                                 <div class="progress mt-1" style="height: 5px;">
-                                    {# Add progress calculation logic if available on model #}
-                                    <div class="progress-bar bg-info" role="progressbar" style="width: {{ goal.get_progress_percentage|default:0 }}%;" aria-valuenow="{{ goal.get_progress_percentage|default:0 }}" aria-valuemin="0" aria-valuemax="100"></div>
+                                    {# Corrected: Use goal.progress_percentage and added quotes #}
+                                    <div class="progress-bar bg-info" role="progressbar" style="width: {{ goal.progress_percentage|default:0|floatformat:0 }}%;" aria-valuenow="{{ goal.progress_percentage|default:0|floatformat:0 }}" aria-valuemin="0" aria-valuemax="100"></div>
                                 </div>
                                 <small class="text-muted">Target: {{ goal.target_amount|floatformat:0 }} / Saved: {{ goal.current_amount|floatformat:0 }}</small>
                             </li>
@@ -86,12 +86,12 @@
                         {% if recent_budgets %}
                             {% for budget in recent_budgets %}
                                 <div class="mb-2">
-                                    <p class="small mb-0"><strong>{{ budget.category.name|truncatechars:20 }}</strong> ({{ budget.start_date|date:"M Y" }})</p>
-                                    {# Add spending calculation logic if available #}
-                                    <p class="small text-muted">Spent: $?? / {{ budget.amount|floatformat:0 }}</p>
+                                    <p class="small mb-0"><strong>{{ budget.category.name|truncatechars:20 }}</strong> ({{ budget.month|date:"M Y" }})</p>
+                                    {# Corrected: Use budget.get_spent_amount #}
+                                    <p class="small text-muted">Spent: ${{ budget.get_spent_amount|floatformat:0 }} / {{ budget.amount|floatformat:0 }}</p>
                                     <div class="progress" style="height: 5px;">
-                                        {# Add progress bar logic based on spending #}
-                                        <div class="progress-bar bg-warning" role="progressbar" style="width: 50%;" aria-valuenow="50" aria-valuemin="0" aria-valuemax="100"></div> 
+                                        {# Corrected: Use budget.get_progress_percentage #}
+                                        <div class="progress-bar bg-warning" role="progressbar" style="width: {{ budget.get_progress_percentage|default:0|floatformat:0 }}%;" aria-valuenow="{{ budget.get_progress_percentage|default:0|floatformat:0 }}" aria-valuemin="0" aria-valuemax="100"></div> 
                                     </div>
                                 </div>
                             {% empty %}
@@ -206,32 +206,6 @@
       {% endif %}
 
     </div>
-
-    <!-- Alerts Sidebar -->
-    {% if user.is_authenticated and budget_alerts %}
-    <div class="col-md-4">
-      <div class="card sticky-top" style="top: 20px;">
-        <div class="card-header bg-primary text-white">
-          <h5 class="card-title mb-0">
-            <i class="bi bi-bell"></i> Alerts
-          </h5>
-        </div>
-        <div class="card-body">
-          <div class="alerts-section mb-4">
-            {% for alert in budget_alerts %}
-            <a href="{% url 'budgets:budget_dashboard' %}" class="text-decoration-none">
-              <div class="alert alert-{{ alert.level }} alert-dismissible fade show mb-3" role="alert">
-                {{ alert.message }}
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close" 
-                        onclick="event.preventDefault();"></button>
-              </div>
-            </a>
-            {% endfor %}
-          </div>
-        </div>
-      </div>
-    </div>
-    {% endif %}
   </div>
 </div>
 

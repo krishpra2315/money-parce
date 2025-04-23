@@ -1,45 +1,61 @@
 {% extends 'base.html' %}
+{% load humanize %} {# Load humanize if not already loaded in base #}
+
+{% block title %}Bill Reminders{% endblock %}
 
 {% block content %}
-<div class="container">
-  <h2>Your Bill Reminders</h2>
-
-  <a href="{% url 'reminder_create' %}" class="btn btn-primary">+ Add Reminder</a>
+<div class="container mt-4">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="mb-0">Your Bill Reminders</h2>
+    <a href="{% url 'reminder_create' %}" class="btn btn-primary">
+      <i class="bi bi-plus-lg me-1"></i> Add Reminder
+    </a>
+  </div>
 
   {% if reminders %}
-    <table class="table mt-3">
-      <thead>
-        <tr>
-          <th>Title</th>
-          <th>Amount</th>
-          <th>Due Date</th>
-          <th>Status</th>
-          <th>Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for reminder in reminders %}
-        <tr>
-          <td>{{ reminder.title }}</td>
-          <td>${{ reminder.amount }}</td>
-          <td>{{ reminder.due_date }}</td>
-          <td>
-            {% if reminder.is_paid %}
-              <span class="text-success">Paid</span>
-            {% else %}
-              <span class="text-danger">Unpaid</span>
-            {% endif %}
-          </td>
-          <td>
-            <a href="{% url 'reminder_edit' reminder.pk %}">Edit</a> |
-            <a href="{% url 'reminder_delete' reminder.pk %}">Delete</a>
-          </td>
-        </tr>
-        {% endfor %}
-      </tbody>
-    </table>
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+      {% for reminder in reminders %}
+        <div class="col">
+          <div class="card h-100 shadow-sm {% if reminder.is_paid %}border-success{% elif reminder.due_date < today %}border-danger{% else %}border-secondary{% endif %}">
+            <div class="card-body d-flex flex-column">
+              <h5 class="card-title">{{ reminder.title }}</h5>
+              <p class="card-text mb-2">
+                <strong>Amount:</strong> ${{ reminder.amount|intcomma }}
+              </p>
+              <p class="card-text mb-3">
+                <strong>Due:</strong> {{ reminder.due_date|date:"D, M d, Y" }} 
+                {% if not reminder.is_paid and reminder.due_date < today %}
+                  <span class="text-danger">(Overdue)</span>
+                {% endif %}
+              </p>
+              
+              <div class="mt-auto d-flex justify-content-between align-items-center">
+                {% if reminder.is_paid %}
+                  <span class="badge bg-success"><i class="bi bi-check-circle-fill me-1"></i> Paid</span>
+                {% else %}
+                  <span class="badge {% if reminder.due_date < today %}bg-danger{% else %}bg-warning text-dark{% endif %}">
+                    <i class="bi bi-exclamation-triangle-fill me-1"></i> Unpaid
+                  </span>
+                {% endif %}
+
+                <div class="btn-group btn-group-sm" role="group" aria-label="Reminder Actions">
+                  <a href="{% url 'reminder_edit' reminder.pk %}" class="btn btn-outline-secondary" title="Edit">
+                    <i class="bi bi-pencil"></i>
+                  </a>
+                  <a href="{% url 'reminder_delete' reminder.pk %}" class="btn btn-outline-danger" title="Delete">
+                    <i class="bi bi-trash"></i>
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
   {% else %}
-    <p>No bill reminders found.</p>
+    <div class="alert alert-info" role="alert">
+      <i class="bi bi-info-circle-fill me-2"></i> No bill reminders found. Why not add one?
+    </div>
   {% endif %}
 </div>
 {% endblock %}
