@@ -50,6 +50,50 @@
         <a class="navbar-brand" href="{% url 'home' %}">MoneyParce</a>
         <ul class="navbar-nav ms-auto flex-row">
           {% if user.is_authenticated %}
+          <!-- Alerts Dropdown Start -->
+          <li class="nav-item dropdown me-3">
+            <a class="nav-link position-relative" href="#" id="alertsDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+              <i class="bi {% if budget_alerts or upcoming_reminders_alerts %}bi-bell-fill text-warning{% else %}bi-bell{% endif %}"></i>
+              {% if budget_alerts or upcoming_reminders_alerts %}
+              <span class="position-absolute bottom-0 start-100 translate-middle-x badge rounded-pill bg-danger">
+                2
+                <span class="visually-hidden">unread messages</span>
+              </span>
+              {% endif %}
+            </a>
+            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="alertsDropdown">
+              {# Display Budget Alerts if they exist #}
+              {% if budget_alerts %}
+                <h6 class="dropdown-header">Budget Alerts</h6> {# Added Header #}
+                {% for alert in budget_alerts %}
+                <li><a class="dropdown-item" href="{% url 'budgets:budget_dashboard' %}">
+                    <span class="badge bg-{{ alert.level }} me-2">!</span> {{ alert.message|truncatechars:40 }}
+                </a></li>
+                {% endfor %}
+              {% endif %}
+
+              {# Add a divider if both budget and reminder alerts exist #}
+              {% if budget_alerts and upcoming_reminders_alerts %}
+                <li><hr class="dropdown-divider"></li>
+              {% endif %}
+
+              {# Display Reminder Alerts if they exist #}
+              {% if upcoming_reminders_alerts %}
+                 <h6 class="dropdown-header">Upcoming Reminders</h6> {# Added Header #}
+                {% for alert in upcoming_reminders_alerts %}
+                <li><a class="dropdown-item" href="{{ alert.link }}"> {# Use alert.link #}
+                    <span class="badge bg-{{ alert.level }} me-2"><i class="bi bi-calendar-event"></i></span> {{ alert.message|truncatechars:40 }}
+                </a></li>
+                {% endfor %}
+              {% endif %}
+
+              {# Display "No new alerts" if both lists are empty #}
+              {% if not budget_alerts and not upcoming_reminders_alerts %}
+                <li><p class="dropdown-item disabled">No new alerts</p></li>
+              {% endif %}
+            </ul>
+          </li>
+          <!-- Alerts Dropdown End -->
           <li class="nav-item me-3">
             <a class="nav-link" href="{% url 'profile' %}"><i class="bi bi-person-circle"></i> Profile</a>
           </li>
