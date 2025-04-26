@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load widget_tweaks %}
+
+{% block title %}Manage Bank Connection - MoneyParce{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Manage Bank Connection</h2>
+    <hr>
+
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    {% if plaid_linked %}
+        <p>Your account is currently linked with: <strong>{{ plaid_institution_name|default:"your bank" }}</strong>.</p>
+        <p>Linking your bank account allows MoneyParce to automatically fetch your transactions, helping you track spending and manage budgets more effectively.</p>
+        
+        <form method="post" action="{% url 'remove_plaid_connection' %}" onsubmit="return confirm('Are you sure you want to disconnect your bank account? This will stop automatic transaction updates.');">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-danger">Disconnect Bank Account</button>
+        </form>
+        
+        {# Add placeholder for viewing linked accounts or initiating sync if needed later #}
+        {# <a href="#" class="btn btn-info mt-2">View Linked Accounts</a> #}
+        {# <a href="#" class="btn btn-secondary mt-2">Sync Transactions</a> #}
+
+    {% else %}
+        <p>You haven't linked a bank account yet.</p>
+        <p>Link your bank account using Plaid to automatically import transactions and simplify your financial tracking.</p>
+        <a href="{% url 'profile' %}" class="btn btn-primary">Link Bank Account Now (from Profile)</a>
+    {% endif %}
+
+    <hr>
+    <a href="{% url 'profile' %}" class="btn btn-outline-secondary">Back to Profile</a>
+
+</div>
+{% endblock %} 

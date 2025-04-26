@@ -1,9 +1,10 @@
 import os
 import openai
 from decimal import Decimal
-from django.db.models.signals import post_save
+from django.db.models.signals import post_save, post_delete
 from django.dispatch import receiver
 from django.conf import settings
+from django.db.models import Sum
 from transactions.models import Transaction
 from .models import MonthlyBudget
 from datetime import date
@@ -23,44 +24,116 @@ except Exception as e:
     print(f"Error initializing OpenAI client: {e}")
 # --------------------------
 
+# --- Helper Function to Update Budget Spent Amount --- 
+def update_budget_spent_amount(user, category_code, budget_month):
+    """Recalculates and updates the spent amount for a specific budget."""
+    try:
+        monthly_budget = MonthlyBudget.objects.get(
+            user=user,
+            category__name=category_code,
+            month=budget_month
+        )
+        logger.debug(f"Found budget ID {monthly_budget.id} to update spent amount for {category_code} / {budget_month}.")
+
+        # Calculate total spent: Sum positive amounts where type is 'expense'
+        total_spent = Transaction.objects.filter(
+            user=user,
+            category=category_code,
+            date__year=budget_month.year,
+            date__month=budget_month.month,
+            transaction_type='expense' # Filter by transaction type
+        ).aggregate(total=Sum('amount'))['total'] or Decimal('0.00')
+
+        # Amount is already positive, no need for abs()
+        new_spent_amount = total_spent 
+
+        if monthly_budget.spent_amount != new_spent_amount:
+            logger.info(f"Updating spent amount for Budget ID {monthly_budget.id} from {monthly_budget.spent_amount} to {new_spent_amount}")
+            monthly_budget.spent_amount = new_spent_amount
+            # Save without triggering signals again, only update spent_amount
+            monthly_budget.save(update_fields=['spent_amount'])
+            return monthly_budget # Return the updated budget
+        else:
+            logger.debug(f"Spent amount for Budget ID {monthly_budget.id} is already up-to-date.")
+            return monthly_budget # Return the budget even if no change
+
+    except MonthlyBudget.DoesNotExist:
+        logger.warning(f"Cannot update spent amount: No MonthlyBudget found for User: {user.username}, Category Code: {category_code}, Month: {budget_month}")
+        return None
+    except Exception as e:
+        logger.error(f"Error updating spent amount for User {user.username}, Category {category_code}, Month {budget_month}: {e}", exc_info=True)
+        return None
+
+
 @receiver(post_save, sender=Transaction)
 def handle_transaction_save(sender, instance, created, **kwargs):
     """
-    After a transaction is saved, check corresponding budget thresholds
-    and trigger OpenAI suggestion if needed.
+    After a transaction is saved, update the corresponding budget's spent amount
+    and then check thresholds for AI suggestions.
     """
     transaction = instance
-    logger.info(f"Signal received for Transaction ID: {transaction.id}, Category: {transaction.category}, Date: {transaction.date}, User: {transaction.user.username}")
+    # Ignore income transactions for budget expense tracking
+    if transaction.transaction_type == 'income': # Check type instead of amount sign
+        logger.info(f"Skipping budget update for income Transaction ID: {transaction.id}")
+        return
+
+    logger.info(f"Signal received for Expense Transaction ID: {transaction.id}, Category: {transaction.category}, Date: {transaction.date}, User: {transaction.user.username}")
     budget_month_start = date(transaction.date.year, transaction.date.month, 1)
 
-    try:
-        # Find the relevant monthly budget
-        logger.debug(f"Attempting to find budget for User: {transaction.user.id}, Category Code: {transaction.category}, Month Start: {budget_month_start}")
-        monthly_budget = MonthlyBudget.objects.get(
-            user=transaction.user,
-            category__name=transaction.category, # Match based on category name/code
-            month=budget_month_start
-        )
-        logger.debug(f"Found MonthlyBudget ID: {monthly_budget.id}")
+    # --- Update Spent Amount FIRST ---
+    monthly_budget = update_budget_spent_amount(
+        transaction.user, 
+        transaction.category, 
+        budget_month_start
+    )
+    # --- End Update Spent Amount ---
 
-        # Check and reset flag if spending dropped below threshold before this transaction
-        monthly_budget.check_and_reset_suggestion_flag()
+    # Continue with AI suggestion logic only if budget was found/updated
+    if monthly_budget:
+        try:
+            # Check and reset flag if spending dropped below threshold before this transaction
+            # (spent amount updated above, so check_and_reset now uses the latest value)
+            monthly_budget.check_and_reset_suggestion_flag()
 
-        # Recalculate progress *after* this transaction might have affected it
-        current_progress = monthly_budget.get_progress_percentage()
-        logger.info(f"Budget ID: {monthly_budget.id} - Current Progress: {current_progress:.2f}%, Suggestion Generated Flag: {monthly_budget.suggestion_generated}")
+            # Recalculate progress with the potentially updated spent_amount
+            current_progress = monthly_budget.get_progress_percentage()
+            logger.info(f"Budget ID: {monthly_budget.id} - Current Progress: {current_progress:.2f}%, Suggestion Generated Flag: {monthly_budget.suggestion_generated}")
 
-        # Check conditions: Over threshold and suggestion not yet generated
-        if current_progress >= 80 and not monthly_budget.suggestion_generated:
-            logger.info(f"Threshold crossed for Budget ID: {monthly_budget.id} ({monthly_budget.category.get_name_display()}). Generating AI suggestion...")
-            generate_ai_suggestion(monthly_budget)
-        else:
-            logger.info(f"Conditions not met for generating suggestion for Budget ID: {monthly_budget.id}.")
+            # Check conditions: Over threshold and suggestion not yet generated
+            if current_progress >= 80 and not monthly_budget.suggestion_generated:
+                logger.info(f"Threshold crossed for Budget ID: {monthly_budget.id} ({monthly_budget.category.get_name_display()}). Generating AI suggestion...")
+                generate_ai_suggestion(monthly_budget)
+            else:
+                logger.info(f"Conditions not met for generating suggestion for Budget ID: {monthly_budget.id}.")
 
-    except MonthlyBudget.DoesNotExist:
-        logger.warning(f"No MonthlyBudget found for User: {transaction.user.username}, Category Code: {transaction.category}, Month: {budget_month_start}")
-    except Exception as e:
-        logger.error(f"Error in handle_transaction_save signal for Transaction ID {transaction.id}: {e}", exc_info=True)
+        except Exception as e:
+            logger.error(f"Error in handle_transaction_save signal (AI part) for Transaction ID {transaction.id}, Budget ID {monthly_budget.id}: {e}", exc_info=True)
+    else:
+         logger.warning(f"Skipping AI check because budget could not be found or updated for Transaction ID {transaction.id}.")
+
+
+# --- New Signal Handler for Deletion ---
+@receiver(post_delete, sender=Transaction)
+def handle_transaction_delete(sender, instance, **kwargs):
+    """
+    After a transaction is deleted, update the corresponding budget's spent amount.
+    """
+    transaction = instance
+    # Ignore income transactions for budget expense tracking
+    if transaction.transaction_type == 'income': # Check type instead of amount sign
+        logger.info(f"Skipping budget update for deleted income Transaction ID: {transaction.id}")
+        return
+    
+    logger.info(f"Delete signal received for Expense Transaction ID: {transaction.id}, Category: {transaction.category}, Date: {transaction.date}, User: {transaction.user.username}")
+    budget_month_start = date(transaction.date.year, transaction.date.month, 1)
+
+    # Update the budget's spent amount
+    update_budget_spent_amount(
+        transaction.user,
+        transaction.category,
+        budget_month_start
+    )
+    logger.info(f"Budget spent amount update triggered after deletion of Transaction ID: {transaction.id}")
 
 
 def generate_ai_suggestion(monthly_budget):
@@ -85,11 +158,12 @@ def generate_ai_suggestion(monthly_budget):
             logger.warning("Skipping AI suggestion: No recent transactions found for context.")
             return
 
+        # Update transaction list string if needed (amount is now always positive)
         transaction_list_str = "\n".join([
             f"- {t.date}: {t.name} (${t.amount})" for t in recent_transactions
-        ])
+        ]) # Amount is already positive here
 
-        # 2. Construct the prompt
+        # 2. Construct the prompt (Ensure it makes sense with positive amounts)
         prompt = f"""
         You are a helpful financial assistant. A user has spent {monthly_budget.get_progress_percentage():.1f}% of their budget for the '{monthly_budget.category.get_name_display()}' category this month.
         Their recent spending in this category includes:

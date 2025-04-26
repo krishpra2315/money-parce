@@ -39,6 +39,12 @@ class User(AbstractUser):
     daily_tip = models.TextField(null=True, blank=True, help_text="Stores the daily financial tip.")
     last_tip_date = models.DateField(null=True, blank=True, help_text="The date the last daily tip was generated.")
 
+    # Plaid Integration Fields
+    plaid_access_token = models.CharField(max_length=255, null=True, blank=True, help_text="Plaid access token for the user")
+    plaid_item_id = models.CharField(max_length=255, null=True, blank=True, help_text="Plaid item ID for the user")
+    plaid_institution_name = models.CharField(max_length=255, null=True, blank=True, help_text="Name of the institution linked via Plaid")
+    plaid_sync_cursor = models.CharField(max_length=255, null=True, blank=True, help_text="Cursor for the next Plaid transaction sync")
+
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['name']
 

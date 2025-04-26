@@ -1,125 +1,214 @@
 {% extends 'base.html' %}
+{% load static %}
+{% load widget_tweaks %}
 
-{% block title %}Profile{% endblock %}
+{% block title %}User Profile - MoneyParce{% endblock %}
 
 {% block content %}
-<div class="row">
-  <div class="col-md-8 offset-md-2">
-    <div class="card mb-4">
-      <div class="card-header bg-primary text-white">
-        <h3 class="card-title mb-0">Your Profile</h3>
-      </div>
-      <div class="card-body">
-        <form method="post">
-          {% csrf_token %}
-          <div class="row mb-3">
-            <div class="col-md-6">
-              <label for="{{ form.email.id_for_label }}" class="form-label">Email</label>
-              {{ form.email }}
-              {% if form.email.errors %}
-                <div class="text-danger">
-                  {% for error in form.email.errors %}
-                    {{ error }}
-                  {% endfor %}
+<div class="container mt-4">
+    <h2>User Profile</h2>
+    <hr>
+
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card mb-4">
+                <div class="card-header">
+                    Update Profile Information
                 </div>
-              {% endif %}
-            </div>
-            <div class="col-md-6">
-              <label for="{{ form.name.id_for_label }}" class="form-label">Name</label>
-              {{ form.name }}
-              {% if form.name.errors %}
-                <div class="text-danger">
-                  {% for error in form.name.errors %}
-                    {{ error }}
-                  {% endfor %}
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        {% for field in form %}
+                            <div class="mb-3">
+                                <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
+                                {% render_field field class="form-control" %}
+                                {% if field.help_text %}
+                                    <small class="form-text text-muted">{{ field.help_text }}</small>
+                                {% endif %}
+                                {% for error in field.errors %}
+                                    <div class="invalid-feedback d-block">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                        {% endfor %}
+                        <button type="submit" class="btn btn-primary">Update Profile</button>
+                    </form>
                 </div>
-              {% endif %}
             </div>
-          </div>
-          
-          <div class="row mb-3">
-            <div class="col-md-6">
-              <label for="{{ form.age.id_for_label }}" class="form-label">Age</label>
-              {{ form.age }}
-              <small class="form-text text-muted">
-                {% if user.age >= 18 and user.age <= 22 %}
-                  You are eligible for scholarships!
-                {% endif %}
-              </small>
-              {% if form.age.errors %}
-                <div class="text-danger">
-                  {% for error in form.age.errors %}
-                    {{ error }}
-                  {% endfor %}
-                </div>
-              {% endif %}
-            </div>
-            <div class="col-md-6">
-              <div class="mt-4">
-                <h5>Bank Account Status:</h5>
-                <p>
-                  {% if user.bank_linked %}
-                  <span class="badge bg-success">Linked</span>
-                  {% else %}
-                  <span class="badge bg-danger">Not Linked</span>
-                  <br />
-                  <small>Link your bank account to access all features</small>
-                  {% endif %}
-                </p>
-              </div>
-            </div>
-          </div>
-          
-          <div class="d-grid gap-2">
-            <button type="submit" class="btn btn-primary">Update Profile</button>
-          </div>
-        </form>
-      </div>
-    </div>
-    
-    <div class="card">
-      <div class="card-header bg-info text-white">
-        <h4 class="card-title mb-0">Account Features & Security</h4>
-      </div>
-      <div class="card-body">
-        <div class="row">
-          <div class="col-md-6">
-            <h5>Your Current Features:</h5>
-            <ul class="list-group">
-              <li class="list-group-item">Budget Management</li>
-              <li class="list-group-item">Transaction Tracking</li>
-              <li class="list-group-item">Goal Setting</li>
-              <li class="list-group-item">Bill Reminders</li>
-              {% if user.age is not None and user.age >= 18 and user.age <= 22 %}
-                <li class="list-group-item list-group-item-success">
-                  Scholarships
-                  <span class="badge bg-success float-end">Eligible</span>
-                </li>
-              {% endif %}
-            </ul>
-          </div>
-          <div class="col-md-6">
-            <h5>Account Security:</h5>
-            <div class="mb-3">
-                <strong>Two-Factor Authentication:</strong>
-                {% if two_factor_enabled %}
-                  <span class="badge bg-success">Enabled</span>
-                {% else %}
-                  <span class="badge bg-danger">Disabled</span>
-                {% endif %}
-            </div>
-            <div class="d-grid gap-2">
-              <a href="{% url 'two_factor:profile' %}" class="btn btn-outline-primary">
-                Manage 2FA Settings
-              </a>
-              <a href="{% url 'password_reset' %}" class="btn btn-outline-secondary">
-                Reset Password
-              </a>
-            </div>
-          </div>
         </div>
-      </div>
+
+        <div class="col-md-4">
+            <div class="card mb-4">
+                <div class="card-header">
+                    Security Settings
+                </div>
+                <div class="card-body">
+                    <h5>Two-Factor Authentication (2FA)</h5>
+                    {% if two_factor_enabled %}
+                        <p class="text-success"><i class="fas fa-check-circle"></i> 2FA is enabled.</p>
+                        <a href="{% url 'two_factor:profile' %}" class="btn btn-secondary btn-sm">Manage 2FA Settings</a>
+                    {% else %}
+                        <p class="text-warning"><i class="fas fa-exclamation-triangle"></i> 2FA is not enabled.</p>
+                        <a href="{% url 'two_factor:setup' %}" class="btn btn-warning btn-sm">Enable 2FA</a>
+                    {% endif %}
+                    <hr>
+                    <a href="{% url 'password_reset' %}" class="btn btn-outline-secondary btn-sm">Reset Password</a>
+                </div>
+            </div>
+
+            <div class="card mb-4">
+                <div class="card-header">
+                    Bank Connection (Plaid)
+                </div>
+                <div class="card-body">
+                    {% if plaid_linked %}
+                        <p class="text-success"><i class="fas fa-check-circle"></i> Bank account linked: <strong>{{ plaid_institution_name|default:"Connected" }}</strong></p>
+                        <a href="{% url 'manage_plaid_connection' %}" class="btn btn-secondary btn-sm">Manage Connection</a>
+                    {% else %}
+                        <p class="text-warning"><i class="fas fa-exclamation-triangle"></i> No bank account linked.</p>
+                        <p><small>Link your bank account to automatically import transactions.</small></p>
+                        <button id="link-button" class="btn btn-primary btn-sm" disabled>Link Bank Account</button>
+                        <div id="plaid-link-error" class="text-danger mt-2" style="display: none;"></div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
     </div>
-  </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+{# Only include Plaid JS if the user needs to link an account #}
+{% if not plaid_linked %}
+<script src="https://cdn.plaid.com/link/v2/stable/link-initialize.js"></script>
+<script type="text/javascript">
+  // Removed the jQuery wrapper - it wasn't needed as vanilla JS is used inside
+  (async () => {
+    console.log("Plaid JS block executing..."); // Debug log
+
+    const linkButton = document.getElementById('link-button');
+    const errorDiv = document.getElementById('plaid-link-error');
+
+    // Check if button exists
+    if (!linkButton) {
+        console.error("Plaid link button not found!");
+        return;
+    }
+
+    const fetchLinkToken = async () => {
+      console.log("Fetching link token..."); // Debug log
+      try {
+        const response = await fetch('{% url "create_link_token" %}', { method: 'GET' });
+        console.log("Fetch response status:", response.status); // Debug log
+        if (!response.ok) {
+            const errorText = await response.text(); // Attempt to get error text
+            console.error("Fetch response error text:", errorText); // Debug log
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const data = await response.json();
+        if (data.error) {
+            console.error("Link token API returned error:", data.error); // Debug log
+            throw new Error(data.error);
+        }
+        console.log("Link token received:", data.link_token ? 'OK' : 'MISSING'); // Debug log
+        return data.link_token;
+      } catch (error) {
+          console.error('Failed to fetch link token:', error);
+          errorDiv.textContent = 'Could not initialize bank linking. Please try again later.';
+          errorDiv.style.display = 'block';
+          linkButton.disabled = true; // Keep button disabled
+          return null;
+      }
+    };
+
+    const linkToken = await fetchLinkToken();
+
+    if (linkToken) {
+      console.log("Initializing Plaid Link handler..."); // Debug log
+      try {
+          const handler = Plaid.create({
+            token: linkToken,
+            onSuccess: async (public_token, metadata) => {
+              console.log('Plaid Link onSuccess called');
+              console.log('Public Token:', public_token);
+              console.log('Metadata:', metadata);
+              linkButton.disabled = true;
+              linkButton.textContent = 'Linking...';
+              errorDiv.style.display = 'none';
+
+              try {
+                  const response = await fetch('{% url "exchange_public_token" %}', {
+                    method: 'POST',
+                    headers: {
+                      'Content-Type': 'application/json',
+                      'X-CSRFToken': '{{ csrf_token }}' // Include CSRF token
+                    },
+                    body: JSON.stringify({
+                        public_token: public_token,
+                        metadata: metadata
+                    }),
+                  });
+                  const data = await response.json();
+                  if (response.ok && data.status === 'success') {
+                    console.log('Successfully exchanged public token.', data);
+                    window.location.reload(); // Reload the profile page to show updated status
+                  } else {
+                    throw new Error(data.error || 'Failed to link account after token exchange.');
+                  }
+              } catch(error) {
+                  console.error('Failed to exchange public token:', error);
+                  errorDiv.textContent = `Failed to link account: ${error.message || 'Please try again.'}`;
+                  errorDiv.style.display = 'block';
+                  linkButton.disabled = false; // Re-enable button on failure
+                  linkButton.textContent = 'Link Bank Account';
+              }
+            },
+            onLoad: () => {
+              console.log('Plaid Link loaded');
+              linkButton.disabled = false; // Enable button ONLY after Plaid Link is loaded
+              linkButton.textContent = 'Link Bank Account';
+            },
+            onExit: (err, metadata) => {
+              console.log('Plaid Link exited');
+              if (err != null) {
+                console.error('Plaid Link exit error:', err);
+                errorDiv.textContent = 'An error occurred during linking. Please try again.';
+                errorDiv.style.display = 'block';
+              }
+              console.log('Exit Metadata:', metadata);
+            },
+            onEvent: (eventName, metadata) => {
+              console.log('Plaid Link event:', eventName, metadata);
+            },
+          });
+
+          console.log("Attaching click handler to button..."); // Debug log
+          linkButton.onclick = () => {
+            console.log("Link button clicked!"); // Debug log
+            handler.open();
+          };
+          // Button is enabled in onLoad now
+
+      } catch (error) {
+            console.error("Error creating Plaid handler:", error); // Debug log
+            errorDiv.textContent = 'Could not initialize Plaid Link. Please try again later.';
+            errorDiv.style.display = 'block';
+            linkButton.disabled = true;
+      }
+
+    } else {
+        console.log("Link token was not obtained, Plaid handler not created."); // Debug log
+        // Button remains disabled from initial state or fetch error
+    }
+  })(); // Immediately invoke the async function
+</script>
+{% endif %}
 {% endblock %}

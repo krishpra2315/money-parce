@@ -3,6 +3,7 @@ from django.conf import settings
 from django.db.models import Sum
 from transactions.models import Transaction  # Import Transaction model to use its categories
 from datetime import datetime
+from decimal import Decimal # Import Decimal
 
 class BudgetCategory(models.Model):
     name = models.CharField(max_length=100, choices=Transaction.CATEGORY_CHOICES)
@@ -17,6 +18,7 @@ class BudgetCategory(models.Model):
 class MonthlyBudget(models.Model):
     category = models.ForeignKey(BudgetCategory, on_delete=models.CASCADE)
     amount = models.DecimalField(max_digits=10, decimal_places=2)
+    spent_amount = models.DecimalField(max_digits=10, decimal_places=2, default=Decimal('0.00'), help_text="Automatically updated spent amount for this budget month.")
     month = models.DateField()
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='budgets')
     created_at = models.DateTimeField(auto_now_add=True)
@@ -31,21 +33,15 @@ class MonthlyBudget(models.Model):
         return f"{self.category.name} - {self.month.strftime('%B %Y')} - {self.amount}"
 
     def get_spent_amount(self):
-        return Transaction.objects.filter(
-            user=self.user,
-            category=self.category.name,
-            date__year=self.month.year,
-            date__month=self.month.month
-        ).aggregate(total=Sum('amount'))['total'] or 0
+        return self.spent_amount
 
     def get_remaining_amount(self):
-        return self.amount - self.get_spent_amount()
+        return self.amount - self.spent_amount
 
     def get_progress_percentage(self):
-        if self.amount == 0:
+        if self.amount is None or self.amount == Decimal('0.00'):
             return 100.0
-        spent = self.get_spent_amount()
-        return float((spent / self.amount) * 100) if self.amount else 100.0
+        return float((self.spent_amount / self.amount) * 100) if self.amount else 100.0
 
     def get_alert_status(self):
         spent_percentage = self.get_progress_percentage()

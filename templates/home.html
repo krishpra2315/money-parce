@@ -37,7 +37,7 @@
                            <li class="list-group-item small text-muted">No recent transactions found.</li>
                            {% endfor %}
                        {% else %}
-                           <li class="list-group-item small text-muted">Error loading transactions.</li>
+                           <li class="list-group-item small text-muted">No Transactions right now!</li>
                        {% endif %}
                     </ul>
                     <a href="{% url 'transactions:transaction_list' %}" class="btn btn-sm btn-outline-success mt-3">View All Transactions</a>
@@ -67,7 +67,7 @@
                             <li class="list-group-item small text-muted">No active goals found.</li>
                             {% endfor %}
                         {% else %}
-                            <li class="list-group-item small text-muted">Error loading goals.</li>
+                            <li class="list-group-item small text-muted">No Goals right now!</li>
                         {% endif %}
                     </ul>
                     <a href="{% url 'goals:goal_list' %}" class="btn btn-sm btn-outline-info mt-3">View All Goals</a>
@@ -98,7 +98,7 @@
                                 <p class="small text-muted">No budgets found.</p>
                             {% endfor %}
                         {% else %}
-                            <p class="small text-muted">Error loading budgets.</p>
+                            <p class="small text-muted">No Budgets right now!</p>
                         {% endif %}
                     </div>
                     <a href="{% url 'budgets:budget_dashboard' %}" class="btn btn-sm btn-outline-warning mt-3">View Budgets</a>
@@ -124,7 +124,7 @@
                             <li class="list-group-item small text-muted">No upcoming reminders.</li>
                             {% endfor %}
                         {% else %}
-                            <li class="list-group-item small text-muted">Error loading reminders.</li>
+                            <li class="list-group-item small text-muted">No Reminders right now!</li>
                         {% endif %}
                     </ul>
                     <a href="{% url 'bill_reminders' %}" class="btn btn-sm btn-outline-dark mt-3">View All Reminders</a>

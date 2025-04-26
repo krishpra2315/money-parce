@@ -164,3 +164,12 @@ LOGIN_URL = 'two_factor:login'  # Point login to the 2FA view
 LOGIN_REDIRECT_URL = 'home' # Redirect after successful login (including 2FA)
 # Optional: Redirect URL if 2FA is not configured by the user yet
 # TWO_FACTOR_REDIRECT_URL = 'two_factor:setup'
+
+# Plaid Configuration
+PLAID_CLIENT_ID = os.getenv('PLAID_CLIENT_ID')
+PLAID_SECRET = os.getenv('PLAID_SECRET_SANDBOX') # Using sandbox secret
+PLAID_ENV = 'sandbox' # Or 'development', 'production'
+PLAID_PRODUCTS = os.getenv('PLAID_PRODUCTS', 'transactions').split(',')
+PLAID_COUNTRY_CODES = os.getenv('PLAID_COUNTRY_CODES', 'US').split(',')
+# You might want to store the access token per user in the database, not here.
+# PLAID_ACCESS_TOKEN = None # Example, will be stored per user
