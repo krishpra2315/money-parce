@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Delete Savings Contribution</h2>
+    <p>Are you sure you want to delete the savings contribution "{{ contribution.name }}"?</p>
+    <p>Current Percentage: {{ contribution.percentage }}%</p>
+    
+    <form method="post">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-danger">Yes, Delete</button>
+        <a href="{% url 'savings:contribution_list' %}" class="btn btn-secondary">Cancel</a>
+    </form>
+</div>
+{% endblock %} 

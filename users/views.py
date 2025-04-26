@@ -18,6 +18,7 @@ from transactions.models import Transaction
 from goals.models import Goal
 from budgets.models import MonthlyBudget
 from reminders.models import BillReminder
+from savings.models import SavingsContribution
 import json # Add json import
 from django.http import JsonResponse, HttpResponseBadRequest, HttpResponseServerError # Add JsonResponse etc.
 from django.contrib.auth.decorators import login_required # Add login_required
@@ -112,6 +113,7 @@ def home_view(request):
         'active_goals': None,
         'recent_budgets': None,
         'upcoming_reminders': None,
+        'savings_contributions': None,
         # Add other default context variables if needed
     }
 
@@ -126,6 +128,7 @@ def home_view(request):
             context['active_goals'] = Goal.objects.filter(user=user).order_by('-updated_at')[:3] # Order by most recently updated instead of non-existent status
             context['recent_budgets'] = MonthlyBudget.objects.filter(user=user).order_by('-month')[:3] # Corrected model name and ordering field
             context['upcoming_reminders'] = BillReminder.objects.filter(user=user, due_date__gte=today, is_paid=False).order_by('due_date')[:3] # Corrected model name and added is_paid=False
+            context['savings_contributions'] = SavingsContribution.objects.filter(user=user).order_by('-updated_at')[:3] # Add savings contributions
         except Exception as e:
             # Log error if fetching preview data fails
             print(f"Error fetching preview data for user {user.email}: {e}")
@@ -134,6 +137,7 @@ def home_view(request):
             context['active_goals'] = []
             context['recent_budgets'] = []
             context['upcoming_reminders'] = []
+            context['savings_contributions'] = []
 
         # Check if a new tip should be generated
         if user.last_tip_date is None or user.last_tip_date < today:

@@ -1,0 +1,57 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Income Sources for {{ contribution.name }}</h2>
+        <a href="{% url 'savings:contribution_list' %}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left"></i> Back to Contributions
+        </a>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-body">
+            <h5 class="card-title">Contribution Details</h5>
+            <p class="card-text">
+                <strong>Percentage:</strong> {{ contribution.percentage }}%<br>
+                <strong>Current Amount:</strong> ${{ contribution.current_amount|floatformat:2 }}
+            </p>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <h5 class="card-title mb-0">Income Sources</h5>
+        </div>
+        <div class="card-body">
+            {% if transactions_with_savings %}
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Source</th>
+                                <th>Amount</th>
+                                <th>Contribution</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in transactions_with_savings %}
+                                <tr>
+                                    <td>{{ item.transaction.date|date:"M d, Y" }}</td>
+                                    <td>{{ item.transaction.name }}</td>
+                                    <td>${{ item.transaction.amount|floatformat:2 }}</td>
+                                    <td>${{ item.savings_amount|floatformat:2 }}</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <p class="text-muted">No income sources found for this contribution.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %} 

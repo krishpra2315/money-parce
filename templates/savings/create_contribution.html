@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Add New Savings Contribution</h2>
+    <form method="post">
+        {% csrf_token %}
+        <div class="form-group mb-3">
+            <label for="id_name">{{ form.name.label }}</label>
+            {{ form.name }}
+            <small class="form-text text-muted">Enter the name of your savings (e.g., 401k, 529 Plan, Roth IRA)</small>
+        </div>
+        <div class="form-group mb-3">
+            <label for="id_percentage">{{ form.percentage.label }}</label>
+            {{ form.percentage }}
+            <small class="form-text text-muted">Enter the percentage of income to contribute (0-100%)</small>
+        </div>
+        <button type="submit" class="btn btn-primary">Create Contribution</button>
+        <a href="{% url 'savings:contribution_list' %}" class="btn btn-secondary">Cancel</a>
+    </form>
+</div>
+{% endblock %} 

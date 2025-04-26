@@ -8,6 +8,7 @@ from .forms import TransactionForm, TransactionFilterForm
 from .category_mapper import map_plaid_category
 from users.plaid_utils import get_transactions_sync
 from django.db import transaction as db_transaction
+from savings.models import SavingsContribution
 import datetime
 
 @login_required
@@ -18,7 +19,7 @@ def transaction_list(request):
     transactions = Transaction.objects.filter(user=request.user)
     
     # Process the filter form if it's a GET request with parameters
-    filter_form = TransactionFilterForm(request.GET or None) # Instantiate with GET data (or None)
+    filter_form = TransactionFilterForm(request.GET or None)
     
     # Apply filters ONLY if the form is valid 
     if filter_form.is_valid():
@@ -65,9 +66,36 @@ def transaction_list(request):
             transaction = form.save(commit=False)
             # Add the current user
             transaction.user = request.user
+            
+            # If this is an income transaction, handle savings contributions
+            if transaction.category == 'income':
+                # Get all savings contributions for the user
+                contributions = SavingsContribution.objects.filter(user=request.user)
+                total_percentage = sum(contribution.percentage for contribution in contributions)
+                
+                if total_percentage > 0:
+                    # Calculate and update each contribution
+                    contribution_details = []
+                    for contribution in contributions:
+                        contribution_amount = (transaction.amount * contribution.percentage / 100)
+                        contribution.current_amount += contribution_amount
+                        contribution.save()
+                        contribution_details.append(f"{contribution.percentage}% to {contribution.name}")
+                    
+                    # Subtract the total contribution amount from the income
+                    total_contribution = transaction.amount * total_percentage / 100
+                    transaction.amount -= total_contribution
+                    
+                    # Store the contribution message
+                    contribution_message = f" {total_percentage}% of income ({total_contribution:.2f}) was allocated to savings: {', '.join(contribution_details)}"
+                else:
+                    contribution_message = ""
+            else:
+                contribution_message = ""
+            
             # Now save to DB
             transaction.save()
-            messages.success(request, "Transaction added successfully!")
+            messages.success(request, f"Transaction added successfully!{contribution_message}")
             return redirect('transactions:transaction_list')
     else:
         form = TransactionForm()

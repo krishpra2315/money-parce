@@ -33,6 +33,7 @@ urlpatterns = [
     path('transactions/', include('transactions.urls', namespace='transactions')),
     path('goals/', include('goals.urls', namespace='goals')),
     path('budgets/', include('budgets.urls', namespace='budgets')),
+    path('savings/', include('savings.urls', namespace='savings')),
     # This root path now correctly points to your home_view first
     path('', user_views.home_view, name='home'),
     path('reminders/', include('reminders.urls')),
