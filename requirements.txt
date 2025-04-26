@@ -19,11 +19,13 @@ idna==3.10
 jiter==0.9.0
 kiwisolver==1.4.8
 matplotlib==3.10.1
+nulltype==2.3.1
 numpy==2.2.4
 openai==1.75.0
 packaging==25.0
 phonenumbers==9.0.2
 pillow==11.2.1
+plaid-python==30.0.0
 pydantic==2.11.3
 pydantic_core==2.33.1
 pyparsing==3.2.3
@@ -37,3 +39,4 @@ sqlparse==0.5.3
 tqdm==4.67.1
 typing-inspection==0.4.0
 typing_extensions==4.13.1
+urllib3==2.4.0
