@@ -38,8 +38,11 @@ def charts_dashboard(request):
 
 def generate_category_pie_chart(user, year=None, month=None):
     """Generate a pie chart of spending by category"""
-    # Create base queryset for user's transactions
-    transactions = Transaction.objects.filter(user=user)
+    # Create base queryset for user's transactions, excluding income
+    transactions = Transaction.objects.filter(
+        user=user,
+        transaction_type='expense' # Exclude income transactions
+    )
     
     # Apply year and month filters
     if year:
@@ -110,10 +113,11 @@ def generate_monthly_spending_chart(user, year=None):
     if not year:
         year = datetime.datetime.now().year
     
-    # Get all transactions for the user in the given year
+    # Get all expense transactions for the user in the given year
     transactions = Transaction.objects.filter(
         user=user,
-        date__year=year
+        date__year=year,
+        transaction_type='expense' # Exclude income transactions
     )
     
     # Get spending by month

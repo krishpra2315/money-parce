@@ -54,9 +54,9 @@
           <li class="nav-item dropdown me-3">
             <a class="nav-link position-relative" href="#" id="alertsDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
               <i class="bi {% if budget_alerts or upcoming_reminders_alerts %}bi-bell-fill text-warning{% else %}bi-bell{% endif %}"></i>
-              {% if budget_alerts or upcoming_reminders_alerts %}
+              {% if total_alerts_count > 0 %}
               <span class="position-absolute bottom-0 start-100 translate-middle-x badge rounded-pill bg-danger">
-                2
+                {{ total_alerts_count }}
                 <span class="visually-hidden">unread messages</span>
               </span>
               {% endif %}

@@ -18,6 +18,13 @@ from transactions.models import Transaction
 from goals.models import Goal
 from budgets.models import MonthlyBudget
 from reminders.models import BillReminder
+import json # Add json import
+from django.http import JsonResponse, HttpResponseBadRequest, HttpResponseServerError # Add JsonResponse etc.
+from django.contrib.auth.decorators import login_required # Add login_required
+from django.views.decorators.http import require_POST # Add require_POST
+from django.conf import settings # Import settings
+
+from . import plaid_utils # Import the new plaid utils
 
 def register(request):
     if request.method == 'POST':
@@ -63,17 +70,22 @@ class CustomPasswordResetConfirmView(PasswordResetConfirmView):
 class CustomPasswordResetCompleteView(PasswordResetCompleteView):
     template_name = 'users/password_reset_complete.html'
 
+@login_required
 def profile(request):
     user = request.user
     two_factor_enabled = TOTPDevice.objects.filter(user=user, confirmed=True).exists()
+    plaid_linked = user.plaid_access_token is not None and user.plaid_item_id is not None
 
     if request.method == 'POST':
         form = ProfileUpdateForm(request.POST, instance=user)
         if form.is_valid():
             form.save()
             messages.success(request, "Your profile has been updated successfully.")
+            # Re-check states after save, though plaid_linked shouldn't change here
             two_factor_enabled = TOTPDevice.objects.filter(user=user, confirmed=True).exists()
-            return redirect('profile')
+            plaid_linked = user.plaid_access_token is not None and user.plaid_item_id is not None
+            # Redirect to profile GET request to avoid form resubmission issues
+            return redirect('profile') 
         else:
             messages.error(request, "There was an error updating your profile. Please check the form.")
     else:
@@ -81,7 +93,10 @@ def profile(request):
     
     context = {
         'form': form,
-        'two_factor_enabled': two_factor_enabled
+        'two_factor_enabled': two_factor_enabled,
+        'plaid_linked': plaid_linked, # Pass plaid connection status
+        'plaid_institution_name': user.plaid_institution_name, # Pass institution name if linked
+        'PLAID_CLIENT_ID': settings.PLAID_CLIENT_ID, # Pass client ID for Plaid Link initialization
     }
     return render(request, 'users/profile.html', context)
 
@@ -154,3 +169,91 @@ def home_view(request):
     # For unauthenticated users, context remains with default values (e.g., daily_tip=None)
 
     return render(request, 'home.html', context)
+
+
+# --- Plaid Integration Views ---
+
+@login_required
+def create_link_token_view(request):
+    """View to generate a Plaid Link token."""
+    link_token = plaid_utils.create_link_token(request.user.id)
+    if link_token:
+        return JsonResponse({'link_token': link_token})
+    else:
+        # Use request._request for messages with JsonResponse if needed, but better to return error in JSON
+        # messages.error(request._request, "Could not initialize Plaid Link. Please try again later.") 
+        return JsonResponse({'error': 'Could not create link token'}, status=500)
+
+@login_required
+@require_POST
+# Consider CSRF protection if this endpoint is called directly from a form,
+# but usually it's called via AJAX/fetch from Plaid Link's JS callback.
+# If using fetch from the same origin, CSRF should be handled automatically by Django.
+# from django.views.decorators.csrf import csrf_exempt
+# @csrf_exempt
+def exchange_public_token_view(request):
+    """View to exchange a Plaid public token for an access token."""
+    try:
+        data = json.loads(request.body)
+        public_token = data.get('public_token')
+        metadata = data.get('metadata', {})
+        institution = metadata.get('institution', {})
+        institution_name = institution.get('name')
+        institution_id = institution.get('institution_id') # Optionally store this too
+
+        if not public_token:
+            return HttpResponseBadRequest(json.dumps({'error': "Missing public_token"}), content_type="application/json")
+
+        access_token, item_id = plaid_utils.exchange_public_token(public_token)
+
+        if access_token and item_id:
+            user = request.user
+            user.plaid_access_token = access_token
+            user.plaid_item_id = item_id
+            user.plaid_institution_name = institution_name
+            # user.plaid_institution_id = institution_id # Save if you added the field
+            user.save(update_fields=['plaid_access_token', 'plaid_item_id', 'plaid_institution_name'])
+            # Use request._request for messages with JsonResponse is tricky, prefer JSON response
+            # messages.success(request._request, f"Successfully linked your account with {institution_name or 'your bank'}.") 
+            return JsonResponse({'status': 'success', 'item_id': item_id, 'institution_name': institution_name})
+        else:
+            # messages.error(request._request, "Could not exchange public token. Plaid connection failed.")
+            return JsonResponse({'error': 'Could not exchange public token'}, status=500)
+    except json.JSONDecodeError:
+        return HttpResponseBadRequest(json.dumps({'error': "Invalid JSON data"}), content_type="application/json")
+    except Exception as e:
+        print(f"Error exchanging public token: {e}") # Log the error
+        # messages.error(request._request, "An unexpected error occurred during Plaid connection.")
+        return JsonResponse({'error': "Server error during token exchange"}, status=500)
+
+
+@login_required
+def manage_plaid_connection_view(request):
+    """View to display Plaid connection status and management options."""
+    user = request.user
+    context = {
+        'plaid_linked': user.plaid_access_token is not None and user.plaid_item_id is not None,
+        'plaid_institution_name': user.plaid_institution_name,
+    }
+    return render(request, 'users/manage_plaid.html', context)
+
+@login_required
+@require_POST
+def remove_plaid_connection_view(request):
+    """View to remove the Plaid connection for the user."""
+    user = request.user
+    if user.plaid_access_token:
+        removed = plaid_utils.remove_item(user.plaid_access_token)
+        if removed:
+            institution_name = user.plaid_institution_name or "your bank"
+            user.plaid_access_token = None
+            user.plaid_item_id = None
+            user.plaid_institution_name = None
+            user.save(update_fields=['plaid_access_token', 'plaid_item_id', 'plaid_institution_name'])
+            messages.success(request, f"Successfully disconnected your account with {institution_name}.")
+        else:
+            messages.error(request, "Could not disconnect your bank account. Please try again.")
+    else:
+        messages.warning(request, "No bank account is currently linked.")
+
+    return redirect('manage_plaid_connection') # Redirect back to the management page
