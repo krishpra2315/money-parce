@@ -141,6 +141,11 @@
             </a>
           </li>
           <li>
+            <a href="{% url 'savings:contribution_list' %}" class="nav-link {% if request.resolver_match.app_name == 'savings' %}active{% endif %}">
+              <i class="bi bi-piggy-bank"></i> Savings Contributions
+            </a>
+          </li>
+          <li>
             <a href="{% url 'goals:goal_list' %}" class="nav-link {% if request.resolver_match.app_name == 'goals' %}active{% endif %}">
               <i class="bi bi-bullseye"></i> Goals
             </a>

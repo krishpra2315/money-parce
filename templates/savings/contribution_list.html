@@ -6,30 +6,6 @@
     <h2>Savings Contributions</h2>
     <a href="{% url 'savings:create_contribution' %}" class="btn btn-primary mb-3">Add New Contribution</a>
 
-    {% if messages %}
-        {% for message in messages %}
-            <div class="alert alert-{{ message.tags }}">
-                {{ message }}
-            </div>
-        {% endfor %}
-    {% endif %}
-
-    <div class="card mb-4">
-        <div class="card-body">
-            <h5 class="card-title">Total Contribution Percentage</h5>
-            <div class="progress" style="height: 30px;">
-                <div class="progress-bar progress-bar-striped progress-bar-animated {% if total_percentage > 100 %}bg-danger{% else %}bg-success{% endif %}"
-                     role="progressbar"
-                     style="width: {{ total_percentage }}%;"
-                     aria-valuenow="{{ total_percentage }}"
-                     aria-valuemin="0"
-                     aria-valuemax="100">
-                    {{ total_percentage }}%
-                </div>
-            </div>
-        </div>
-    </div>
-
     <div class="row">
         {% for contribution in contributions %}
         <div class="col-md-6 mb-4">
